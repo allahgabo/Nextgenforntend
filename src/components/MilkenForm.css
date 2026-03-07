@@ -1,0 +1,204 @@
+.milken-form {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+  overflow: hidden;
+}
+
+/* TABS */
+.tabs {
+  display: flex;
+  flex-wrap: wrap;
+  background: #f0f4fa;
+  border-bottom: 2px solid #1c3370;
+  gap: 2px;
+  padding: 4px 4px 0;
+}
+.tab-btn {
+  padding: 8px 14px;
+  border: none;
+  background: #e0e8f5;
+  color: #1c3370;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  border-radius: 6px 6px 0 0;
+  font-family: inherit;
+  transition: all 0.2s;
+}
+.tab-btn:hover { background: #c8d8f0; }
+.tab-btn.active {
+  background: #1c3370;
+  color: white;
+}
+
+/* FORM BODY */
+.form-body { padding: 20px; min-height: 300px; }
+
+/* SECTION CARD */
+.section-card {
+  border: 1px solid #e0e8f5;
+  border-radius: 8px;
+  overflow: hidden;
+}
+.section-card-title {
+  background: #1c3370;
+  color: white;
+  padding: 10px 16px;
+  font-weight: 700;
+  font-size: 13px;
+}
+.section-card-body { padding: 16px; }
+
+/* FIELDS */
+.field { margin-bottom: 12px; }
+.field-label {
+  display: block;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: #1c3370;
+  margin-bottom: 4px;
+}
+.field-input {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid #c8d8f0;
+  border-radius: 5px;
+  font-size: 12px;
+  font-family: inherit;
+  color: #333;
+  direction: rtl;
+  transition: border 0.2s;
+  resize: vertical;
+}
+.field-input:focus {
+  outline: none;
+  border-color: #1c3370;
+  box-shadow: 0 0 0 2px rgba(28,51,112,0.1);
+}
+
+/* LIST ITEMS */
+.list-item-row {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 6px;
+  align-items: flex-start;
+}
+.list-item-row .field-input { flex: 1; }
+
+/* REPEAT BLOCKS */
+.repeat-block {
+  border: 1px solid #e0e8f5;
+  border-radius: 6px;
+  padding: 12px;
+  margin-bottom: 12px;
+  background: #fafcff;
+}
+.repeat-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+  font-size: 12px;
+  color: #555;
+}
+
+/* BUTTONS */
+.btn-add {
+  background: #28a745;
+  color: white;
+  border: none;
+  padding: 6px 14px;
+  border-radius: 5px;
+  font-size: 12px;
+  cursor: pointer;
+  font-family: inherit;
+  font-weight: 600;
+  margin-top: 4px;
+}
+.btn-add:hover { background: #1e8836; }
+
+.btn-remove {
+  background: #dc3545;
+  color: white;
+  border: none;
+  padding: 4px 10px;
+  border-radius: 4px;
+  font-size: 11px;
+  cursor: pointer;
+  font-family: inherit;
+  flex-shrink: 0;
+}
+.btn-remove:hover { background: #b02030; }
+
+/* ACTION BAR */
+.action-bar {
+  background: #f0f4fa;
+  border-top: 2px solid #1c3370;
+  padding: 16px 20px;
+}
+.action-buttons {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  margin-bottom: 10px;
+}
+.btn-preview {
+  background: #6c757d;
+  color: white;
+  border: none;
+  padding: 10px 22px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: inherit;
+  display: flex; align-items: center; gap: 6px;
+}
+.btn-preview:hover:not(:disabled) { background: #5a6268; }
+.btn-preview:disabled { opacity: 0.6; cursor: not-allowed; }
+
+.btn-generate {
+  background: linear-gradient(135deg, #1c3370, #0f3460);
+  color: white;
+  border: none;
+  padding: 10px 28px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 800;
+  cursor: pointer;
+  font-family: inherit;
+  box-shadow: 0 3px 10px rgba(28,51,112,0.3);
+  display: flex; align-items: center; gap: 6px;
+}
+.btn-generate:hover:not(:disabled) {
+  background: linear-gradient(135deg, #253d8a, #1c3370);
+  transform: translateY(-1px);
+}
+.btn-generate:disabled { opacity: 0.6; cursor: not-allowed; }
+
+.filename-note {
+  text-align: right;
+  font-size: 11px;
+  color: #888;
+}
+
+.error-msg {
+  background: #fff0f0;
+  border: 1px solid #ffcdd2;
+  color: #c62828;
+  padding: 8px 14px;
+  border-radius: 5px;
+  font-size: 12px;
+  margin-bottom: 10px;
+}
+
+.info-note {
+  background: #e8f4fd;
+  border: 1px solid #bee5fb;
+  color: #0c5460;
+  padding: 8px 14px;
+  border-radius: 5px;
+  font-size: 12px;
+  margin-bottom: 12px;
+}

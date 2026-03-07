@@ -1,0 +1,21 @@
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Segoe UI', Arial, sans-serif;
+  background: #f0f2f5;
+  color: #333;
+  direction: rtl;
+}
+
+:root {
+  --navy: #1B2D6E;
+  --gold: #B8962E;
+  --green: #2EBD6B;
+  --orange: #E05C2A;
+  --light-gray: #F4F5F7;
+  --border: #ddd;
+}
