@@ -9,8 +9,8 @@
  */
 import { mapBriefingToReport } from './briefingMapper';
 
-const CLOUD_RUN_BASE = 'https://briefing-api-365936249363.me-central1.run.app';
-const BRIEFING_URL   = CLOUD_RUN_BASE + '/briefing';
+// Always use /api/briefing — proxied by server.js (prod) and setupProxy.js (dev)
+const BRIEFING_URL = '/api/briefing';
 const STORE_KEY    = 'sfda_reports';
 const TOKEN_KEY    = 'sfda_token';
 const USER_KEY     = 'sfda_user';
