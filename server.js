@@ -1,6 +1,7 @@
 const express = require('express');
 const path    = require('path');
 const https   = require('https');
+const fs      = require('fs');
 
 const app       = express();
 const PORT      = process.env.PORT || 10000;
@@ -33,14 +34,26 @@ app.post('/api/briefing', (req, res) => {
   proxy.end();
 });
 
-// ── Serve Vite build ─────────────────────────────────────
-// Use process.cwd() which Render sets to the project root
-const DIST = path.join(process.cwd(), 'dist');
-console.log('Serving static from:', DIST);
+// ── Find dist folder ─────────────────────────────────────
+const candidates = [
+  path.join(process.cwd(), 'dist'),
+  path.join(__dirname, 'dist'),
+  path.join(process.cwd(), 'build'),
+  path.join(__dirname, 'build'),
+];
+const DIST = candidates.find(p => fs.existsSync(path.join(p, 'index.html')));
+console.log('Dist candidates:', candidates);
+console.log('Using dist:', DIST || 'NOT FOUND');
 
-app.use(express.static(DIST));
-app.get('*', (req, res) => {
-  res.sendFile(path.join(DIST, 'index.html'));
-});
+if (DIST) {
+  app.use(express.static(DIST));
+  app.get('*', (req, res) => {
+    res.sendFile(path.join(DIST, 'index.html'));
+  });
+} else {
+  app.get('*', (req, res) => {
+    res.status(500).send('Build folder not found. Candidates tried: ' + candidates.join(', '));
+  });
+}
 
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
