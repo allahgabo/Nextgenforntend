@@ -2,8 +2,8 @@ const express = require('express');
 const path    = require('path');
 const https   = require('https');
 
-const app      = express();
-const PORT     = process.env.PORT || 3000;
+const app       = express();
+const PORT      = process.env.PORT || 10000;
 const CLOUD_RUN = 'briefing-api-365936249363.me-central1.run.app';
 
 app.use(express.json());
@@ -26,14 +26,18 @@ app.post('/api/briefing', (req, res) => {
     upstream.pipe(res);
   });
   proxy.on('error', (err) => {
+    console.error('[Proxy Error]', err.message);
     res.status(502).json({ error: 'Proxy error', detail: err.message });
   });
   proxy.write(body);
   proxy.end();
 });
 
-// ── Serve Vite build (dist folder) ──────────────────────
-const DIST = path.join(__dirname, 'dist');
+// ── Serve Vite build ─────────────────────────────────────
+// Use process.cwd() which Render sets to the project root
+const DIST = path.join(process.cwd(), 'dist');
+console.log('Serving static from:', DIST);
+
 app.use(express.static(DIST));
 app.get('*', (req, res) => {
   res.sendFile(path.join(DIST, 'index.html'));
