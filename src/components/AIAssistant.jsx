@@ -74,15 +74,26 @@ export default function AIAssistant({ reports = [], lang = 'ar' }) {
 
   /* ── Format markdown ─────────────────────────────────── */
   const fmt = (content) => {
-    const s = typeof content === 'string' ? content : String(content || '');
+    let s = typeof content === 'string' ? content : String(content || '');
+    // Unescape literal \n if still present
+    s = s.replace(/\\n/g, '\n').replace(/\\t/g, '  ');
+    // Bold and italic
+    s = s.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+    s = s.replace(/\*(.*?)\*/g, '<em>$1</em>');
+    // Headings ### ## #
+    s = s.replace(/^###\s*(.+)$/gm, '<div style="font-size:13px;font-weight:800;color:#1e1b4b;margin:12px 0 4px"">$1</div>');
+    s = s.replace(/^##\s*(.+)$/gm,  '<div style="font-size:14px;font-weight:800;color:#1e1b4b;margin:14px 0 5px">$1</div>');
+    s = s.replace(/^#\s*(.+)$/gm,   '<div style="font-size:15px;font-weight:900;color:#1e1b4b;margin:16px 0 6px">$1</div>');
     return s
-      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-      .replace(/\*(.*?)\*/g, '<em>$1</em>')
       .split('\n')
       .map(line => {
-        if (line.startsWith('• ') || line.startsWith('- '))
-          return `<div style="display:flex;gap:8px;margin:4px 0;align-items:flex-start"><span style="color:#6366f1;font-size:8px;margin-top:6px;flex-shrink:0">●</span><span>${line.slice(2)}</span></div>`;
-        if (line.trim() === '') return '<div style="margin:5px 0"></div>';
+        const t = line.trim();
+        if (t === '') return '<div style="margin:4px 0"></div>';
+        if (t.startsWith('• ') || t.startsWith('- ') || t.startsWith('* '))
+          return `<div style="display:flex;gap:8px;margin:3px 0;align-items:flex-start"><span style="color:#6366f1;font-size:8px;margin-top:6px;flex-shrink:0">●</span><span>${t.slice(2)}</span></div>`;
+        if (/^\d+\.\s/.test(t))
+          return `<div style="display:flex;gap:8px;margin:3px 0;align-items:flex-start"><span style="color:#6366f1;font-weight:700;flex-shrink:0">${t.match(/^(\d+)\./)[ 1]}.</span><span>${t.replace(/^\d+\.\s/, '')}</span></div>`;
+        if (t.startsWith('<div')) return t; // already formatted heading
         return `<span>${line}</span><br/>`;
       })
       .join('');

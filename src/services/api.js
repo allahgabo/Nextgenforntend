@@ -252,8 +252,12 @@ export const chatAssistant = async (messages, system, briefingReport) => {
     }
 
     const data = await res.json();
-    // API returns a plain string
-    const text = typeof data === 'string' ? data : JSON.stringify(data);
+    // API returns either a plain string or { response: "..." }
+    let text = typeof data === 'string'
+      ? data
+      : (data?.response || data?.message || data?.content || JSON.stringify(data));
+    // Unescape literal \n sequences into real newlines
+    text = text.replace(/\\n/g, '\n').replace(/\\t/g, '  ');
     return { data: { content: [{ type: 'text', text }] } };
 
   } catch (e) {
