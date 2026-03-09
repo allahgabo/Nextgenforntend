@@ -59,7 +59,7 @@ export default function AIAssistant({ reports = [], lang = 'ar' }) {
     const toStr = c => typeof c === 'string' ? c : String(c || '');
     const history = messages.map(m => ({ role: m.role, content: toStr(m.content).replace(/<[^>]+>/g, '') }));
     try {
-      const res = await chatAssistant([...history, { role: 'user', content: txt }], buildSystem());
+      const res = await chatAssistant([...history, { role: 'user', content: txt }], buildSystem(), reports[0] || null);
       // content may be a string or an array of blocks [{type:'text', text:'...'}]
       const raw = res.data.content;
       const aiText = Array.isArray(raw)

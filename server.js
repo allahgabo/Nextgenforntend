@@ -7,14 +7,14 @@ const app       = express();
 const PORT      = process.env.PORT || 10000;
 const CLOUD_RUN = 'briefing-api-365936249363.me-central1.run.app';
 
-app.use(express.json());
+app.use(express.json({ limit: '10mb' }));
 
-// ── Proxy /api/briefing → Cloud Run ─────────────────────
-app.post('/api/briefing', (req, res) => {
+// ── Generic proxy helper ─────────────────────────────────
+function proxyPost(cloudPath, req, res) {
   const body = JSON.stringify(req.body);
   const options = {
     hostname: CLOUD_RUN,
-    path:     '/briefing',
+    path:     cloudPath,
     method:   'POST',
     headers:  {
       'Content-Type':   'application/json',
@@ -32,28 +32,27 @@ app.post('/api/briefing', (req, res) => {
   });
   proxy.write(body);
   proxy.end();
-});
+}
 
-// ── Find dist folder ─────────────────────────────────────
+// ── Routes ───────────────────────────────────────────────
+app.post('/api/briefing', (req, res) => proxyPost('/briefing', req, res));
+app.post('/api/chat',     (req, res) => proxyPost('/chat',     req, res));
+
+// ── Serve Vite build ─────────────────────────────────────
 const candidates = [
   path.join(process.cwd(), 'dist'),
-  path.join(__dirname, 'dist'),
+  path.join(__dirname,     'dist'),
   path.join(process.cwd(), 'build'),
-  path.join(__dirname, 'build'),
+  path.join(__dirname,     'build'),
 ];
 const DIST = candidates.find(p => fs.existsSync(path.join(p, 'index.html')));
-console.log('Dist candidates:', candidates);
-console.log('Using dist:', DIST || 'NOT FOUND');
+console.log('Using dist:', DIST || 'NOT FOUND — tried: ' + candidates.join(', '));
 
 if (DIST) {
   app.use(express.static(DIST));
-  app.get('*', (req, res) => {
-    res.sendFile(path.join(DIST, 'index.html'));
-  });
+  app.get('*', (req, res) => res.sendFile(path.join(DIST, 'index.html')));
 } else {
-  app.get('*', (req, res) => {
-    res.status(500).send('Build folder not found. Candidates tried: ' + candidates.join(', '));
-  });
+  app.get('*', (req, res) => res.status(500).send('Build not found. Tried: ' + candidates.join(', ')));
 }
 
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+app.listen(PORT, () => console.log(`Server on port ${PORT}`));

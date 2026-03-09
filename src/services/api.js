@@ -15,6 +15,34 @@ const STORE_KEY    = 'sfda_reports';
 const TOKEN_KEY    = 'sfda_token';
 const USER_KEY     = 'sfda_user';
 
+// ── Speaker photo enrichment ─────────────────────────────────────────────
+// API now returns speaker images directly. Fall back to Wikipedia if empty.
+
+async function fetchWikipediaPhoto(name) {
+  if (!name) return '';
+  try {
+    const encoded = encodeURIComponent(name);
+    const url = `https://en.wikipedia.org/w/api.php?action=query&titles=${encoded}&prop=pageimages&format=json&pithumbsize=300&origin=*`;
+    const res  = await fetch(url);
+    const data = await res.json();
+    const pages = data?.query?.pages || {};
+    const page  = Object.values(pages)[0];
+    return page?.thumbnail?.source || '';
+  } catch {
+    return '';
+  }
+}
+
+async function enrichSpeakersWithPhotos(speakers) {
+  return Promise.all(
+    speakers.map(async (s) => {
+      if (s.photo_url) return s; // API returned a real photo
+      const photo_url = await fetchWikipediaPhoto(s.name);
+      return { ...s, photo_url };
+    })
+  );
+}
+
 // ── localStorage store ───────────────────────────────────────────────────
 
 function readStore() {
@@ -118,26 +146,24 @@ export const generateAI = async (reportId) => {
   const draft = store.find(r => r.id === reportId);
   if (!draft) throw new Error('Draft report not found.');
 
-  // Open-Meteo (used by Cloud Run for weather) only supports future dates.
-  // If the conference dates are in the past, offset them to start tomorrow
-  // so the weather tool doesn't crash. Real dates are stored in the report.
+  // Open-Meteo only supports future dates.
+  // The Cloud Run backend parses the 'dates' string directly and passes it to Open-Meteo.
+  // So we must send a human-readable future date string in the 'dates' field.
+  // Real conference dates are preserved separately in the stored report.
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
-  function toApiDate(dateStr, fallbackOffsetDays = 1) {
-    if (!dateStr) return '';
-    const d = new Date(dateStr);
-    if (isNaN(d.getTime()) || d < today) {
-      const future = new Date(today);
-      future.setDate(future.getDate() + fallbackOffsetDays);
-      return future.toISOString().split('T')[0];
-    }
-    return dateStr;
+  function futureMonthDay(offsetDays) {
+    const d = new Date(today);
+    d.setDate(d.getDate() + offsetDays);
+    return d.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
   }
 
-  const apiStart = toApiDate(draft.start_date, 1);
-  const apiEnd   = toApiDate(draft.end_date   || draft.start_date, 4);
-  const dates    = apiStart ? (apiEnd && apiEnd !== apiStart ? apiStart + ' to ' + apiEnd : apiStart) : '';
+  // e.g. "March 10-13, 2026" — always in the future so Open-Meteo accepts it
+  const startD = new Date(today); startD.setDate(startD.getDate() + 2);
+  const endD   = new Date(today); endD.setDate(endD.getDate() + 5);
+  const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  const dates  = `${months[startD.getMonth()]} ${startD.getDate()}-${endD.getDate()}, ${startD.getFullYear()}`;
 
   const payload = {
     conference_name:     draft.event_name          || '',
@@ -179,7 +205,9 @@ export const generateAI = async (reportId) => {
   try { apiResponse = JSON.parse(rawText); }
   catch(e) { throw { response: { status: 500, data: { error: 'Invalid JSON from API: ' + e.message } } }; }
   const mapped      = mapBriefingToReport(apiResponse, { ...draft, ...payload });
-  const fullReport  = { ...mapped, id: reportId };
+  // Enrich speakers with Wikipedia photos
+  const enrichedSpeakers = await enrichSpeakersWithPhotos(mapped.speakers || []);
+  const fullReport  = { ...mapped, id: reportId, speakers: enrichedSpeakers };
 
   const idx = store.findIndex(r => r.id === reportId);
   if (idx !== -1) store[idx] = fullReport; else store.unshift(fullReport);
@@ -193,42 +221,46 @@ export const generateBriefing = async (formData) => {
   return generateAI(draft.id);
 };
 
-// ── Chat assistant ────────────────────────────────────────────────────────
-// The Cloud Run API only exposes /briefing — no chat endpoint exists.
-// We call the Anthropic API directly from the browser instead.
+// ── Chat assistant — POST /chat ───────────────────────────────────────────
 
-export const chatAssistant = async (messages, system) => {
+export const chatAssistant = async (messages, system, briefingReport) => {
   try {
-    const res = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'Content-Type':         'application/json',
-        'x-api-key':            process.env.REACT_APP_ANTHROPIC_KEY || '',
-        'anthropic-version':    '2023-06-01',
-        'anthropic-dangerous-direct-browser-access': 'true',
-      },
-      body: JSON.stringify({
-        model:      'claude-haiku-4-5-20251001',
-        max_tokens: 1024,
-        system:     system || '',
-        messages:   messages,
-      }),
+    // Build history array from messages (exclude last user message)
+    const history = messages.slice(0, -1).map(m => ({
+      role:    m.role,
+      content: typeof m.content === 'string' ? m.content : String(m.content || ''),
+    }));
+
+    // Last message is the current user question
+    const lastMsg = messages[messages.length - 1];
+    const message = typeof lastMsg?.content === 'string' ? lastMsg.content : String(lastMsg?.content || '');
+
+    // Pass the briefing report as context if available
+    const briefing_context_json = briefingReport
+      ? JSON.stringify(briefingReport)
+      : (system || '');
+
+    const res = await fetch('/api/chat', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({ message, briefing_context_json, history }),
     });
+
     if (!res.ok) {
       const err = await res.json().catch(() => ({}));
-      throw new Error(err?.error?.message || res.status);
+      throw new Error(err?.detail || err?.error || res.status);
     }
+
     const data = await res.json();
-    // Return in same shape AIAssistant expects
-    return { data: { content: data.content } };
+    // API returns a plain string
+    const text = typeof data === 'string' ? data : JSON.stringify(data);
+    return { data: { content: [{ type: 'text', text }] } };
+
   } catch (e) {
     console.warn('[chatAssistant] failed:', e.message);
     return {
       data: {
-        content: [{
-          type: 'text',
-          text: 'AI chat is not configured. Add REACT_APP_ANTHROPIC_KEY to your .env file to enable it.',
-        }],
+        content: [{ type: 'text', text: 'تعذّر الاتصال بالمساعد الذكي. يرجى المحاولة لاحقاً.' }],
       },
     };
   }
