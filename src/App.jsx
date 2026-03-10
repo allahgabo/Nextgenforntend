@@ -61,7 +61,7 @@ const C = {
   blueGlow:  'rgba(99,102,241,0.10)',
 };
 
-const FONT      = "'Cairo','DM Sans',sans-serif";
+const FONT      = "'Cairo',sans-serif";
 const SHADOW    = '0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04)';
 const SHADOW_MD = '0 4px 14px rgba(0,0,0,0.08)';
 const SHADOW_LG = '0 8px 32px rgba(0,0,0,0.12)';
@@ -83,7 +83,7 @@ const GLOBAL_CSS = `
 const inputStyle = (focused) => ({
   width:'100%', padding:'11px 14px',
   border:`1.5px solid ${focused ? C.indigo : C.border}`,
-  borderRadius:10, fontSize:13, color:C.ink,
+  borderRadius:10, fontSize:15, color:C.ink,
   background: focused ? C.surface : C.surface2,
   outline:'none', fontFamily:FONT, transition:'all 0.15s',
   boxShadow: focused ? '0 0 0 3px rgba(99,102,241,0.10)' : 'none',
@@ -94,11 +94,11 @@ function SectionLabel({ children, dir, onViewAll }) {
   return (
     <div style={{ display:'flex', alignItems:'center', gap:9, marginBottom:14, direction:dir }}>
       <div style={{ width:3, height:15, borderRadius:2, background:C.indigo }}/>
-      <span style={{ fontSize:11, fontWeight:700, color:C.indigo, letterSpacing:'0.14em', textTransform:'uppercase', fontFamily:FONT }}>
+      <span style={{ fontSize:13, fontWeight:700, color:C.indigo, letterSpacing:'0.14em', textTransform:'uppercase', fontFamily:FONT }}>
         {children}
       </span>
       {onViewAll && (
-        <button onClick={onViewAll} style={{ marginInlineStart:'auto', fontSize:12, fontWeight:600, color:C.indigo, background:'none', border:'none', cursor:'pointer', fontFamily:FONT, padding:0 }}>
+        <button onClick={onViewAll} style={{ marginInlineStart:'auto', fontSize:14, fontWeight:600, color:C.indigo, background:'none', border:'none', cursor:'pointer', fontFamily:FONT, padding:0 }}>
           {dir==='rtl' ? '← عرض الكل' : 'View all →'}
         </button>
       )}
@@ -144,10 +144,10 @@ function Toast({ toast }) {
   return ReactDOM.createPortal(
     <div style={{ position:'fixed', top:18, insetInlineEnd:18, zIndex:99999, animation:'toastIn 0.2s ease' }}>
       <div style={{ background:C.surface, border:`1px solid ${ok?'rgba(34,197,94,0.25)':'rgba(239,68,68,0.25)'}`, borderRadius:12, padding:'12px 18px', display:'flex', alignItems:'center', gap:10, boxShadow:SHADOW_LG, maxWidth:380 }}>
-        <div style={{ width:32, height:32, borderRadius:8, flexShrink:0, display:'flex', alignItems:'center', justifyContent:'center', fontSize:15, background:ok?C.greenBg:C.coralBg }}>
+        <div style={{ width:32, height:32, borderRadius:8, flexShrink:0, display:'flex', alignItems:'center', justifyContent:'center', fontSize:17, background:ok?C.greenBg:C.coralBg }}>
           {ok?'✓':'⚠'}
         </div>
-        <span style={{ fontSize:13, fontWeight:500, color:C.ink, fontFamily:FONT }}>{toast.msg}</span>
+        <span style={{ fontSize:15, fontWeight:500, color:C.ink, fontFamily:FONT }}>{toast.msg}</span>
       </div>
     </div>,
     document.body
@@ -180,7 +180,7 @@ function ReportsPage({ reports, lang, t, isAr, dir, setPage, handleDelete, openD
         <div style={{ display:'flex', gap:3, background:C.surface, borderRadius:10, padding:3, border:`1px solid ${C.border}`, boxShadow:SHADOW }}>
           {['all','ready','draft'].map(f=>(
             <button key={f} onClick={()=>setFilter(f)}
-              style={{ padding:'7px 14px', borderRadius:7, border:'none', cursor:'pointer', fontFamily:FONT, fontSize:12, fontWeight:600, transition:'all 0.15s',
+              style={{ padding:'7px 14px', borderRadius:7, border:'none', cursor:'pointer', fontFamily:FONT, fontSize:14, fontWeight:600, transition:'all 0.15s',
                 background:filter===f?C.navy:'transparent', color:filter===f?'white':C.ink3 }}>
               {f==='all'?t.filterAll:f==='ready'?t.ready:t.draft}
             </button>
@@ -190,10 +190,10 @@ function ReportsPage({ reports, lang, t, isAr, dir, setPage, handleDelete, openD
 
       {filtered.length===0 ? (
         <div style={{ textAlign:'center', padding:'80px 20px' }}>
-          <div style={{ fontSize:36, marginBottom:12 }}>✈️</div>
-          <div style={{ fontSize:17, fontWeight:700, color:C.ink, marginBottom:8, fontFamily:FONT }}>{isAr ? 'لا يوجد تقارير بعد' : 'No reports found'}</div>
-          <div style={{ fontSize:13.5, color:C.ink3, marginBottom:20 }}>{isAr ? 'أنشئ أول تقرير استخباراتي للسفر' : 'Create your first travel intelligence briefing'}</div>
-          <button onClick={()=>setPage('new')} style={{ padding:'10px 24px', background:C.navy, color:'white', border:'none', borderRadius:9, cursor:'pointer', fontSize:13.5, fontWeight:700, fontFamily:FONT }}>
+          <div style={{ fontSize:38, marginBottom:12 }}>✈️</div>
+          <div style={{ fontSize:19, fontWeight:700, color:C.ink, marginBottom:8, fontFamily:FONT }}>{isAr ? 'لا يوجد تقارير بعد' : 'No reports found'}</div>
+          <div style={{ fontSize:15.5, color:C.ink3, marginBottom:20 }}>{isAr ? 'أنشئ أول تقرير استخباراتي للسفر' : 'Create your first travel intelligence briefing'}</div>
+          <button onClick={()=>setPage('new')} style={{ padding:'10px 24px', background:C.navy, color:'white', border:'none', borderRadius:9, cursor:'pointer', fontSize:15.5, fontWeight:700, fontFamily:FONT }}>
             {t.createFirstBtn}
           </button>
         </div>
@@ -224,14 +224,14 @@ function ReportCard({ r, lang, t, isAr, dir, openDetail, handleDelete }) {
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/></svg>
           </button>
         </div>
-        <div style={{ fontWeight:700, fontSize:14.5, color:C.ink, marginBottom:12, lineHeight:1.35, fontFamily:FONT }}>{r.title||r.event_name}</div>
+        <div style={{ fontWeight:700, fontSize:16.5, color:C.ink, marginBottom:12, lineHeight:1.35, fontFamily:FONT }}>{r.title||r.event_name}</div>
         <div style={{ height:1, marginBottom:12, background:`repeating-linear-gradient(${isAr?'270deg':'90deg'},transparent 0,transparent 5px,${C.border} 5px,${C.border} 10px)` }}/>
-        <div style={{ display:'flex', flexWrap:'wrap', gap:8, fontSize:11.5, color:C.ink3 }}>
+        <div style={{ display:'flex', flexWrap:'wrap', gap:8, fontSize:13.5, color:C.ink3 }}>
           <span style={{ display:'flex', alignItems:'center', gap:4 }}>
             <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke={C.indigo} strokeWidth="2.5" strokeLinecap="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
             {r.city}, {translateCountry(r.country,lang)}
           </span>
-          <span style={{ fontFamily:FONT, fontSize:11 }}>{r.start_date}</span>
+          <span style={{ fontFamily:FONT, fontSize:13 }}>{r.start_date}</span>
           {r.ai_generated && <span style={{ color:C.purple, fontWeight:700, fontSize:10, background:'#f5f3ff', padding:'2px 6px', borderRadius:4, border:'1px solid rgba(124,58,237,0.2)' }}>✦ AI</span>}
         </div>
       </div>
@@ -240,6 +240,12 @@ function ReportCard({ r, lang, t, isAr, dir, openDetail, handleDelete }) {
 }
 
 // ─── Main App ────────────────────────────────────────────────
+// Inject Cairo font globally
+const cairoStyle = document.createElement('link');
+cairoStyle.rel = 'stylesheet';
+cairoStyle.href = 'https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap';
+if (!document.querySelector('link[href*="Cairo"]')) document.head.appendChild(cairoStyle);
+
 export default function App() {
   const [authScreen,     setAuthScreen]  = useState(()=>isAuthenticated()?null:'login');
   const [page,           setPageRaw]     = useState('dashboard');
@@ -430,11 +436,11 @@ export default function App() {
 
               {/* Left/Right: Title + subtitle */}
               <div style={{ display:'flex', flexDirection:'column', gap:2, minWidth:0 }}>
-                <span style={{ fontSize:17, fontWeight:800, color: darkMode?'#f1f5f9':C.ink, fontFamily:FONT, letterSpacing: isAr?0:'-0.02em' }}>
+                <span style={{ fontSize:19, fontWeight:800, color: darkMode?'#f1f5f9':C.ink, fontFamily:FONT, letterSpacing: isAr?0:'-0.02em' }}>
                   {meta.title}
                 </span>
                 {meta.sub && (
-                  <span style={{ fontSize:11, color:C.ink4, fontFamily:FONT, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>
+                  <span style={{ fontSize:13, color:C.ink4, fontFamily:FONT, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>
                     {meta.sub}
                   </span>
                 )}
@@ -452,7 +458,7 @@ export default function App() {
                       padding:'9px 18px',
                       background: C.navy,
                       color:'white', border:'none', borderRadius:9,
-                      fontSize:13, fontWeight:700, cursor:'pointer',
+                      fontSize:15, fontWeight:700, cursor:'pointer',
                       fontFamily:FONT, transition:'all 0.18s',
                       boxShadow:'0 2px 10px rgba(13,24,41,0.30)',
                       whiteSpace:'nowrap',
@@ -532,7 +538,7 @@ export default function App() {
                         <div style={{ fontSize:42, fontWeight:300, color:s.clr, lineHeight:1, marginBottom:5, fontFamily:"'DM Sans',sans-serif" }}>
                           {loading ? '—' : s.val}
                         </div>
-                        <div style={{ fontSize:12, fontWeight:500, color: darkMode?'rgba(255,255,255,0.45)':C.ink3 }}>{s.label}</div>
+                        <div style={{ fontSize:14, fontWeight:500, color: darkMode?'rgba(255,255,255,0.45)':C.ink3 }}>{s.label}</div>
                       </div>
                     ))}
                   </div>
@@ -555,7 +561,7 @@ export default function App() {
                           </svg>
                         </div>
                         <div>
-                          <div style={{ fontWeight:700, fontSize:13.5, color: darkMode?'#f1f5f9':C.ink }}>{t.mapTitle}</div>
+                          <div style={{ fontWeight:700, fontSize:15.5, color: darkMode?'#f1f5f9':C.ink }}>{t.mapTitle}</div>
                           <div style={{ fontSize:10.5, color:C.ink4, marginTop:1 }}>{t.mapSubtitle}</div>
                         </div>
                       </div>
@@ -580,9 +586,9 @@ export default function App() {
                     <Card style={{ background: darkMode?C.navyMid:C.surface, minWidth:0, overflow:'hidden' }}>
                       <div style={{ padding:'13px 18px 11px', borderBottom:`1px solid ${darkMode?'rgba(255,255,255,0.07)':C.border}`, display:'flex', alignItems:'center', justifyContent:'space-between' }}>
                         <div style={{ display:'flex', alignItems:'center', gap:9 }}>
-                          <div style={{ width:30, height:30, borderRadius:8, background:C.blueBg, display:'flex', alignItems:'center', justifyContent:'center', fontSize:13 }}>📰</div>
+                          <div style={{ width:30, height:30, borderRadius:8, background:C.blueBg, display:'flex', alignItems:'center', justifyContent:'center', fontSize:15 }}>📰</div>
                           <div style={{ display:'flex', alignItems:'center', gap:7 }}>
-                            <span style={{ fontWeight:700, fontSize:13.5, color: darkMode?'#f1f5f9':C.ink, fontFamily:FONT }}>{t.intelFeed}</span>
+                            <span style={{ fontWeight:700, fontSize:15.5, color: darkMode?'#f1f5f9':C.ink, fontFamily:FONT }}>{t.intelFeed}</span>
                             {isLive ? (
                               <span style={{ fontSize:9, color:C.green, fontWeight:700, background:C.greenBg, padding:'2px 7px', borderRadius:20, border:'1px solid rgba(16,185,129,0.2)', display:'inline-flex', alignItems:'center', gap:3 }}>
                                 <span style={{ width:4, height:4, borderRadius:'50%', background:C.green, animation:'blink 2s infinite' }}/>LIVE
@@ -614,11 +620,11 @@ export default function App() {
                             <div key={i}
                               onClick={()=>{ if(item.url && item.url !== '#') window.open(item.url,'_blank','noopener'); }}
                               style={{ display:'flex', gap:10, padding:'10px 16px', borderBottom:i<feed.length-1?`1px solid ${C.border}`:'none', alignItems:'flex-start', cursor:'pointer', transition:'background 0.15s', background:isNew?'rgba(99,102,241,0.05)':active?'rgba(99,102,241,0.03)':'transparent', borderInlineStart:active?`2px solid ${C.indigo}`:'2px solid transparent' }}>
-                              <div style={{ width:30, height:30, borderRadius:8, background:active?C.indigoBg:C.surface2, border:`1px solid ${active?'rgba(99,102,241,0.2)':C.border}`, display:'flex', alignItems:'center', justifyContent:'center', fontSize:12, flexShrink:0 }}>
+                              <div style={{ width:30, height:30, borderRadius:8, background:active?C.indigoBg:C.surface2, border:`1px solid ${active?'rgba(99,102,241,0.2)':C.border}`, display:'flex', alignItems:'center', justifyContent:'center', fontSize:14, flexShrink:0 }}>
                                 {isNew?'🆕':(item.icon||'📰')}
                               </div>
                               <div style={{ flex:1, minWidth:0 }}>
-                                <div style={{ fontWeight:600, fontSize:12, color:active?C.indigo:C.ink, marginBottom:3, lineHeight:1.45, fontFamily:FONT, wordBreak:'break-word', overflowWrap:'anywhere' }}>{item.title}</div>
+                                <div style={{ fontWeight:600, fontSize:14, color:active?C.indigo:C.ink, marginBottom:3, lineHeight:1.45, fontFamily:FONT, wordBreak:'break-word', overflowWrap:'anywhere' }}>{item.title}</div>
                                 <div style={{ fontSize:10.5, color:C.ink3, marginBottom:4, lineHeight:1.5, fontFamily:FONT, wordBreak:'break-word', overflowWrap:'anywhere', overflow:'hidden', display:'-webkit-box', WebkitLineClamp:3, WebkitBoxOrient:'vertical' }}>{item.summary}</div>
                                 <div style={{ display:'flex', alignItems:'center', gap:5, fontSize:9.5, color:C.ink4 }}>
                                   <span>{item.source}</span>
@@ -650,9 +656,9 @@ export default function App() {
                     <Card style={{ background: darkMode?C.navyMid:C.surface }}>
                       <div style={{ padding:'13px 18px 11px', borderBottom:`1px solid ${darkMode?'rgba(255,255,255,0.07)':C.border}`, display:'flex', alignItems:'center', justifyContent:'space-between' }}>
                         <div style={{ display:'flex', alignItems:'center', gap:9 }}>
-                          <div style={{ width:30, height:30, borderRadius:8, background:C.coralBg, display:'flex', alignItems:'center', justifyContent:'center', fontSize:13 }}>🏥</div>
+                          <div style={{ width:30, height:30, borderRadius:8, background:C.coralBg, display:'flex', alignItems:'center', justifyContent:'center', fontSize:15 }}>🏥</div>
                           <div style={{ display:'flex', alignItems:'center', gap:7 }}>
-                            <span style={{ fontWeight:700, fontSize:13.5, color: darkMode?'#f1f5f9':C.ink, fontFamily:FONT }}>{t.whoAlerts}</span>
+                            <span style={{ fontWeight:700, fontSize:15.5, color: darkMode?'#f1f5f9':C.ink, fontFamily:FONT }}>{t.whoAlerts}</span>
                             {isLive && (
                               <span style={{ fontSize:9, color:C.coral, fontWeight:700, background:C.coralBg, padding:'2px 7px', borderRadius:20, border:'1px solid rgba(239,68,68,0.2)', display:'inline-flex', alignItems:'center', gap:3 }}>
                                 <span style={{ width:4, height:4, borderRadius:'50%', background:C.coral, animation:'blink 2s infinite' }}/>LIVE
@@ -673,12 +679,12 @@ export default function App() {
                               </a>
                             </div>
                             <a href={item.url || 'https://www.who.int/news'} target="_blank" rel="noopener noreferrer"
-                              style={{ fontWeight:600, fontSize:12.5, color: darkMode?'#f1f5f9':C.ink, display:'block', textDecoration:'none', lineHeight:1.4, marginBottom:6, fontFamily:FONT }}
+                              style={{ fontWeight:600, fontSize:14.5, color: darkMode?'#f1f5f9':C.ink, display:'block', textDecoration:'none', lineHeight:1.4, marginBottom:6, fontFamily:FONT }}
                               onMouseEnter={e=>{ e.currentTarget.style.color=C.indigo; }}
                               onMouseLeave={e=>{ e.currentTarget.style.color=darkMode?'#f1f5f9':C.ink; }}>
                               {item.title}
                             </a>
-                            <div style={{ fontSize:11, color:C.ink3, marginBottom:8, lineHeight:1.55, fontFamily:FONT }}>{item.summary}</div>
+                            <div style={{ fontSize:13, color:C.ink3, marginBottom:8, lineHeight:1.55, fontFamily:FONT }}>{item.summary}</div>
                             <div style={{ display:'flex', flexWrap:'wrap', gap:5 }}>
                               {(item.tags||[]).map(tag=>(
                                 <span key={tag} style={{ background:C.surface2, color:C.ink3, borderRadius:20, padding:'2px 9px', fontSize:10, border:`1px solid ${C.border}` }}>{tag}</span>
@@ -697,10 +703,10 @@ export default function App() {
 
                   {reports.length===0 && !loading ? (
                     <Card style={{ padding:'36px', textAlign:'center', background: darkMode?C.navyMid:C.surface }}>
-                      <div style={{ fontSize:32, marginBottom:10 }}>✈️</div>
-                      <div style={{ fontSize:16, fontWeight:700, color: darkMode?'#f1f5f9':C.ink, marginBottom:6, fontFamily:FONT }}>{isAr ? 'لا يوجد تقارير بعد' : 'No reports yet'}</div>
-                      <div style={{ fontSize:13, color:C.ink3, marginBottom:18 }}>{isAr ? 'أنشئ أول تقرير استخباراتي للسفر' : 'Create your first travel intelligence briefing'}</div>
-                      <button onClick={()=>setPage('new')} style={{ padding:'10px 22px', background:C.navy, color:'white', border:'none', borderRadius:9, cursor:'pointer', fontSize:13, fontWeight:700, fontFamily:FONT }}>
+                      <div style={{ fontSize:34, marginBottom:10 }}>✈️</div>
+                      <div style={{ fontSize:18, fontWeight:700, color: darkMode?'#f1f5f9':C.ink, marginBottom:6, fontFamily:FONT }}>{isAr ? 'لا يوجد تقارير بعد' : 'No reports yet'}</div>
+                      <div style={{ fontSize:15, color:C.ink3, marginBottom:18 }}>{isAr ? 'أنشئ أول تقرير استخباراتي للسفر' : 'Create your first travel intelligence briefing'}</div>
+                      <button onClick={()=>setPage('new')} style={{ padding:'10px 22px', background:C.navy, color:'white', border:'none', borderRadius:9, cursor:'pointer', fontSize:15, fontWeight:700, fontFamily:FONT }}>
                         {t.createFirstBtn}
                       </button>
                     </Card>
@@ -742,23 +748,23 @@ export default function App() {
 
                             {/* Report name */}
                             <div style={{ display:'flex', alignItems:'center', gap:11, minWidth:0 }}>
-                              <div style={{ width:34, height:34, borderRadius:9, background:ready?C.greenBg:C.amberBg, border:`1px solid ${ready?'rgba(16,185,129,0.2)':'rgba(245,158,11,0.2)'}`, display:'flex', alignItems:'center', justifyContent:'center', fontSize:14, flexShrink:0 }}>
+                              <div style={{ width:34, height:34, borderRadius:9, background:ready?C.greenBg:C.amberBg, border:`1px solid ${ready?'rgba(16,185,129,0.2)':'rgba(245,158,11,0.2)'}`, display:'flex', alignItems:'center', justifyContent:'center', fontSize:16, flexShrink:0 }}>
                                 {ready?'📄':'📝'}
                               </div>
                               <div style={{ minWidth:0 }}>
-                                <div style={{ fontWeight:600, fontSize:13, color: darkMode?'#e2e8f0':C.ink, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap', fontFamily:FONT }}>{r.title||r.event_name}</div>
+                                <div style={{ fontWeight:600, fontSize:15, color: darkMode?'#e2e8f0':C.ink, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap', fontFamily:FONT }}>{r.title||r.event_name}</div>
                                 {r.ai_generated && <span style={{ color:C.purple, fontWeight:700, fontSize:9.5, background:'#f5f3ff', padding:'1px 5px', borderRadius:3, border:'1px solid rgba(124,58,237,0.2)' }}>✦ AI</span>}
                               </div>
                             </div>
 
                             {/* Destination */}
-                            <div style={{ fontSize:11.5, color:C.ink3, display:'flex', alignItems:'center', gap:4 }}>
+                            <div style={{ fontSize:13.5, color:C.ink3, display:'flex', alignItems:'center', gap:4 }}>
                               <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke={C.indigo} strokeWidth="2.5" strokeLinecap="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
                               {r.city ? `${r.city}، ${translateCountry(r.country,lang)}` : translateCountry(r.country,lang)}
                             </div>
 
                             {/* Date */}
-                            <div style={{ fontSize:11.5, color:C.ink3 }}>{r.start_date}</div>
+                            <div style={{ fontSize:13.5, color:C.ink3 }}>{r.start_date}</div>
 
                             {/* Actions */}
                             <div style={{ display:'flex', alignItems:'center', justifyContent:'center', gap:6 }}>

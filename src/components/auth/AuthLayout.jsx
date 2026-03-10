@@ -19,7 +19,7 @@ export default function AuthLayout({ children, lang: propLang, onLangChange }) {
   const t    = T[lang];
   const isAr = lang === 'ar';
   const dir  = isAr ? 'rtl' : 'ltr';
-  const font = isAr ? "'Cairo','Segoe UI',sans-serif" : "'DM Sans',-apple-system,sans-serif";
+  const font = "'Cairo',sans-serif";
 
   const switchLang = (l) => {
     persistLang(l);
@@ -66,6 +66,8 @@ export default function AuthLayout({ children, lang: propLang, onLangChange }) {
   }[lang];
 
   return (
+    <>
+    <style>{`@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap');`}</style>
     <div style={{
       display: 'flex',
       height: '100vh',
@@ -214,5 +216,6 @@ export default function AuthLayout({ children, lang: propLang, onLangChange }) {
       </div>
 
     </div>
+  </>
   );
 }

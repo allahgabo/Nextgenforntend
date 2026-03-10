@@ -79,7 +79,7 @@ function Field({
         display: 'flex', justifyContent: 'space-between',
         alignItems: 'center', marginBottom: 6,
       }}>
-        <label style={{ fontSize: 13, fontWeight: 600, color: '#1e1b4b', fontFamily: font }}>
+        <label style={{ fontSize: 15, fontWeight: 600, color: '#1e1b4b', fontFamily: font }}>
           {label}
         </label>
         {labelRight}
@@ -96,7 +96,7 @@ function Field({
             paddingRight: sideIcon  ? '40px' : '14px',
             paddingLeft:  rightSlot ? '40px' : '14px',
             border: `1.5px solid ${error ? '#ef4444' : focused ? '#6366f1' : '#e5e7eb'}`,
-            borderRadius: 10, fontSize: 13.5, color: '#0f172a',
+            borderRadius: 10, fontSize: 15.5, color: '#0f172a',
             background: '#fff', outline: 'none',
             transition: 'border-color 0.15s, box-shadow 0.15s', fontFamily: font,
             boxShadow: focused ? '0 0 0 3px rgba(99,102,241,0.12)' : 'none',
@@ -123,7 +123,7 @@ function Field({
         )}
       </div>
       {error && (
-        <p style={{ margin: '4px 0 0', fontSize: 11.5, color: '#ef4444', fontFamily: font }}>
+        <p style={{ margin: '4px 0 0', fontSize: 13.5, color: '#ef4444', fontFamily: font }}>
           {error}
         </p>
       )}
@@ -184,10 +184,10 @@ export default function LoginPage({ onLogin, onGoSignup, onGoForgot, initialLang
 
           {/* ② Title + subtitle */}
           <div style={{ textAlign: 'center', marginBottom: 22 }}>
-            <h2 style={{ margin: '0 0 7px', fontSize: 19, fontWeight: 800, color: '#1e1b4b', fontFamily: font }}>
+            <h2 style={{ margin: '0 0 7px', fontSize: 21, fontWeight: 800, color: '#1e1b4b', fontFamily: font }}>
               {isAr ? 'إحاطة | Ehaata' : 'إحاطة | Ehaata'}
             </h2>
-            <p style={{ margin: 0, fontSize: 12.5, color: '#9ca3af', lineHeight: 1.6, fontFamily: font }}>
+            <p style={{ margin: 0, fontSize: 14.5, color: '#9ca3af', lineHeight: 1.6, fontFamily: font }}>
               {isAr
                 ? 'منصة الإحاطة الذكية لتمكين التمثيل المؤسسي'
                 : 'Smart Briefing Platform for Institutional Representation'}
@@ -212,7 +212,7 @@ export default function LoginPage({ onLogin, onGoSignup, onGoForgot, initialLang
                 }}
                 style={{
                   padding: '10px 8px', fontFamily: font,
-                  fontSize: 13, fontWeight: 600,
+                  fontSize: 15, fontWeight: 600,
                   border: 'none', cursor: 'pointer', transition: 'all 0.15s',
                   background: activeTab === tab.key ? '#1e1b4b' : '#fff',
                   color:      activeTab === tab.key ? '#fff'    : '#9ca3af',
@@ -228,8 +228,8 @@ export default function LoginPage({ onLogin, onGoSignup, onGoForgot, initialLang
               background: '#fef2f2', border: '1.5px solid #fecaca',
               borderRadius: 10, padding: '9px 13px', marginBottom: 12,
             }}>
-              <span style={{ fontSize: 14 }}>⚠️</span>
-              <span style={{ fontSize: 12.5, color: '#dc2626', fontFamily: font }}>{apiErr}</span>
+              <span style={{ fontSize: 16 }}>⚠️</span>
+              <span style={{ fontSize: 14.5, color: '#dc2626', fontFamily: font }}>{apiErr}</span>
             </div>
           )}
 
@@ -256,7 +256,7 @@ export default function LoginPage({ onLogin, onGoSignup, onGoForgot, initialLang
             labelRight={
               <button onClick={() => onGoForgot?.(lang)} style={{
                 background: 'none', border: 'none', cursor: 'pointer',
-                padding: 0, color: '#6366f1', fontSize: 12,
+                padding: 0, color: '#6366f1', fontSize: 14,
                 fontWeight: 600, fontFamily: font,
               }}>
                 {t.forgotPassword}
@@ -272,7 +272,7 @@ export default function LoginPage({ onLogin, onGoSignup, onGoForgot, initialLang
               width: '100%', padding: '13px',
               background: loading ? '#818cf8' : '#1e1b4b',
               color: '#fff', border: 'none', borderRadius: 10,
-              fontSize: 14.5, fontWeight: 700,
+              fontSize: 16.5, fontWeight: 700,
               cursor: loading ? 'not-allowed' : 'pointer',
               fontFamily: font, transition: 'background 0.2s',
               boxShadow: '0 4px 16px rgba(30,27,75,0.22)',
@@ -293,7 +293,7 @@ export default function LoginPage({ onLogin, onGoSignup, onGoForgot, initialLang
           {/* ⑩ ToS */}
           <p style={{
             textAlign: 'center', marginTop: 14, marginBottom: 0,
-            fontSize: 11.5, color: '#9ca3af', fontFamily: font, lineHeight: 1.6,
+            fontSize: 13.5, color: '#9ca3af', fontFamily: font, lineHeight: 1.6,
           }}>
             {isAr ? 'بالمتابعة، أنت توافق على ' : 'By continuing, you agree to the '}
             <a href="#" style={{ color: '#6366f1', fontWeight: 600, textDecoration: 'none' }}>

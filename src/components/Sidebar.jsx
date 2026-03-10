@@ -113,7 +113,7 @@ export default function Sidebar({ page, setPage, lang: parentLang, setLang: noti
   };
 
   const isAr = lang === 'ar';
-  const font = isAr ? "'Cairo','Segoe UI',sans-serif" : "'DM Sans',-apple-system,sans-serif";
+  const font = "'Cairo',sans-serif";
   const storedUser = getStoredUser() || {};
   // Also pull delegate info from the most recent report
   const lastReport = (() => { try { return JSON.parse(localStorage.getItem('sfda_reports') || '[]')[0] || {}; } catch { return {}; } })();

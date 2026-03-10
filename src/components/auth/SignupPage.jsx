@@ -49,7 +49,7 @@ function Field({ label, type = 'text', value, onChange, placeholder, error, isAr
   return (
     <div style={{ marginBottom: 14 }}>
       <label style={{
-        display: 'block', fontSize: 13, fontWeight: 600,
+        display: 'block', fontSize: 15, fontWeight: 600,
         color: '#1e1b4b', marginBottom: 6, fontFamily: font,
       }}>
         {label}
@@ -66,7 +66,7 @@ function Field({ label, type = 'text', value, onChange, placeholder, error, isAr
               ? `10px ${isAr ? '14px' : '40px'} 10px ${isAr ? '40px' : '14px'}`
               : '10px 14px',
             border: `1.5px solid ${error ? '#ef4444' : focused ? '#6366f1' : '#e5e7eb'}`,
-            borderRadius: 10, fontSize: 13.5, color: '#0f172a',
+            borderRadius: 10, fontSize: 15.5, color: '#0f172a',
             background: '#fff', outline: 'none',
             transition: 'all 0.15s', fontFamily: font,
             boxShadow: focused ? '0 0 0 3px rgba(99,102,241,0.12)' : 'none',
@@ -83,7 +83,7 @@ function Field({ label, type = 'text', value, onChange, placeholder, error, isAr
         )}
       </div>
       {error && (
-        <p style={{ margin: '4px 0 0', fontSize: 11.5, color: '#ef4444', fontFamily: font }}>
+        <p style={{ margin: '4px 0 0', fontSize: 13.5, color: '#ef4444', fontFamily: font }}>
           {error}
         </p>
       )}
@@ -155,10 +155,10 @@ export default function SignupPage({ onSignup, onGoLogin, initialLang }) {
 
           {/* ② Title + subtitle */}
           <div style={{ textAlign: 'center', marginBottom: 20 }}>
-            <h2 style={{ margin: '0 0 7px', fontSize: 19, fontWeight: 800, color: '#1e1b4b', fontFamily: font }}>
+            <h2 style={{ margin: '0 0 7px', fontSize: 21, fontWeight: 800, color: '#1e1b4b', fontFamily: font }}>
               {t.signUpTitle}
             </h2>
-            <p style={{ margin: 0, fontSize: 12.5, color: '#9ca3af', lineHeight: 1.6, fontFamily: font }}>
+            <p style={{ margin: 0, fontSize: 14.5, color: '#9ca3af', lineHeight: 1.6, fontFamily: font }}>
               {t.signUpSubtitle}
             </p>
           </div>
@@ -170,8 +170,8 @@ export default function SignupPage({ onSignup, onGoLogin, initialLang }) {
               background: '#fef2f2', border: '1.5px solid #fecaca',
               borderRadius: 10, padding: '10px 14px', marginBottom: 14,
             }}>
-              <span style={{ fontSize: 15 }}>⚠️</span>
-              <span style={{ fontSize: 13, color: '#dc2626', fontWeight: 500, fontFamily: font }}>{apiErr}</span>
+              <span style={{ fontSize: 17 }}>⚠️</span>
+              <span style={{ fontSize: 15, color: '#dc2626', fontWeight: 500, fontFamily: font }}>{apiErr}</span>
             </div>
           )}
 
@@ -226,7 +226,7 @@ export default function SignupPage({ onSignup, onGoLogin, initialLang }) {
                     }} />
                   ))}
                 </div>
-                <span style={{ fontSize: 11, color: colors[strength - 1], fontWeight: 600, fontFamily: font }}>
+                <span style={{ fontSize: 13, color: colors[strength - 1], fontWeight: 600, fontFamily: font }}>
                   {labels[isAr ? 'ar' : 'en'][strength - 1]}
                 </span>
               </div>
@@ -252,7 +252,7 @@ export default function SignupPage({ onSignup, onGoLogin, initialLang }) {
                 </svg>
               )}
             </div>
-            <span style={{ fontSize: 12.5, color: '#475569', lineHeight: 1.5, fontFamily: font, userSelect: 'none' }}>
+            <span style={{ fontSize: 14.5, color: '#475569', lineHeight: 1.5, fontFamily: font, userSelect: 'none' }}>
               {t.agreeTerms}{' '}
               <span style={{ color: '#6366f1', fontWeight: 600 }}>{t.termsLink}</span>
               {' '}{t.andText}{' '}
@@ -270,7 +270,7 @@ export default function SignupPage({ onSignup, onGoLogin, initialLang }) {
               width: '100%', padding: '13px',
               background: (loading || !agreed) ? '#a5b4fc' : '#1e1b4b',
               color: '#fff', border: 'none', borderRadius: 10,
-              fontSize: 14.5, fontWeight: 700,
+              fontSize: 16.5, fontWeight: 700,
               cursor: (loading || !agreed) ? 'not-allowed' : 'pointer',
               fontFamily: font, transition: 'background 0.2s',
               boxShadow: (loading || !agreed) ? 'none' : '0 4px 16px rgba(30,27,75,0.25)',
@@ -292,12 +292,12 @@ export default function SignupPage({ onSignup, onGoLogin, initialLang }) {
           {/* ⑪ Login link */}
           <p style={{
             textAlign: 'center', marginTop: 16, marginBottom: 0,
-            fontSize: 13, color: '#9ca3af', fontFamily: font,
+            fontSize: 15, color: '#9ca3af', fontFamily: font,
           }}>
             {t.hasAccount}{' '}
             <button onClick={() => onGoLogin?.(lang)} style={{
               background: 'none', border: 'none', cursor: 'pointer',
-              color: '#6366f1', fontWeight: 700, fontSize: 13,
+              color: '#6366f1', fontWeight: 700, fontSize: 15,
               fontFamily: font, padding: 0,
             }}>
               {t.loginLink}
