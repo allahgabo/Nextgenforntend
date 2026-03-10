@@ -47,6 +47,39 @@ function SpeakerPhoto({ url, name, size=90 }) {
   );
 }
 
+/* ── Markdown-lite renderer ──────────────────────────────────────────── */
+function renderInline(text) {
+  if (!text || !String(text).includes('*')) return text;
+  const parts = String(text).split(/(\*\*[^*]+\*\*|\*[^*]+\*)/g);
+  return parts.map((part, i) => {
+    if (/^\*\*(.+)\*\*$/.test(part))
+      return <strong key={i} style={{ fontWeight:700, color:'#1c3370' }}>{part.slice(2,-2)}</strong>;
+    if (/^\*(.+)\*$/.test(part))
+      return <em key={i}>{part.slice(1,-1)}</em>;
+    return part;
+  });
+}
+
+function RichText({ text, dir }) {
+  if (!text) return null;
+  const lines = String(text).split('\n');
+  return (
+    <div style={{ direction: dir }}>
+      {lines.map((line, i) => {
+        const t = line.trim();
+        if (!t) return <div key={i} style={{ height:6 }} />;
+        if (/^###\s/.test(t))
+          return <div key={i} style={{ fontWeight:800, fontSize:15, color:'#1c3370', marginTop:14, marginBottom:6, borderBottom:'2px solid #e8edf4', paddingBottom:4 }}>{t.replace(/^###\s+/,'').replace(/\*\*/g,'')}</div>;
+        if (/^##\s/.test(t))
+          return <div key={i} style={{ fontWeight:800, fontSize:14, color:'#1c3370', marginTop:10, marginBottom:4 }}>{t.replace(/^##\s+/,'').replace(/\*\*/g,'')}</div>;
+        if (/^[-•*]\s/.test(t))
+          return <div key={i} style={{ display:'flex', gap:8, marginBottom:4 }}><span style={{ color:'#1c3370', fontWeight:700, flexShrink:0 }}>•</span><span style={{ fontSize:13.5, color:'#334155', lineHeight:1.7 }}>{renderInline(t.replace(/^[-•*]\s+/,''))}</span></div>;
+        return <div key={i} style={{ fontSize:13.5, color:'#334155', lineHeight:1.8, marginBottom:2 }}>{renderInline(t)}</div>;
+      })}
+    </div>
+  );
+}
+
 const NAV_DARK   = '#1e1b4b';
 const SECTION_BG = 'linear-gradient(135deg,#0d1e3d 0%,#1c3370 60%,#1e4a9a 100%)';
 const CARD_BORDER = '#e8edf4';
@@ -275,13 +308,13 @@ export default function ReportDetail({ reportId, onBack, lang='ar' }) {
             {report.country_info?.overview && (
               <div style={{ borderRadius:14, border:`1px solid ${CARD_BORDER}`, overflow:'hidden', boxShadow:SHADOW_SM }}>
                 <SecHead title={isAr ? 'نبذة عن الدولة' : 'Country Brief'} dir={dir} right={<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.7)" strokeWidth="1.8" strokeLinecap="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>}/>
-                <div style={{ background:'white', padding:'18px 22px', fontSize:15.5, color:'#334155', lineHeight:1.9, direction:dir }}>{report.country_info.overview}</div>
+                <div style={{ background:'white', padding:'18px 22px', fontSize:15.5, color:'#334155', lineHeight:1.9, direction:dir }}><RichText text={report.country_info.overview} dir={dir}/></div>
               </div>
             )}
             {report.sfda_relevance && (
               <div style={{ borderRadius:14, border:`1px solid ${CARD_BORDER}`, overflow:'hidden', boxShadow:SHADOW_SM }}>
                 <SecHead title={isAr ? 'الصلة بالهيئة' : 'Relevance to the Authority'} dir={dir} right={<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.7)" strokeWidth="1.8" strokeLinecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 8 12 12 14 14"/></svg>}/>
-                <div style={{ background:'white', padding:'18px 22px', fontSize:15.5, color:'#334155', lineHeight:1.9, direction:dir }}>{report.sfda_relevance}</div>
+                <div style={{ background:'white', padding:'18px 22px', fontSize:15.5, color:'#334155', lineHeight:1.9, direction:dir }}><RichText text={report.sfda_relevance} dir={dir}/></div>
               </div>
             )}
           </div>
@@ -293,13 +326,13 @@ export default function ReportDetail({ reportId, onBack, lang='ar' }) {
             {report.bilateral_relations && (
               <div style={{ borderRadius:14, border:`1px solid ${CARD_BORDER}`, overflow:'hidden', boxShadow:SHADOW_SM }}>
                 <SecHead title={isAr ? 'العلاقات الثنائية' : 'Bilateral Relations'} dir={dir} right={<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.7)" strokeWidth="1.8" strokeLinecap="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>}/>
-                <div style={{ background:'white', padding:'18px 22px', fontSize:15.5, color:'#334155', lineHeight:1.9, direction:dir }}>{report.bilateral_relations}</div>
+                <div style={{ background:'white', padding:'18px 22px', fontSize:15.5, color:'#334155', lineHeight:1.9, direction:dir }}><RichText text={report.bilateral_relations} dir={dir}/></div>
               </div>
             )}
             {report.geopolitical_summary && (
               <div style={{ borderRadius:14, border:`1px solid ${CARD_BORDER}`, overflow:'hidden', boxShadow:SHADOW_SM }}>
                 <SecHead title={isAr ? 'الملف الجيوسياسي' : 'Geopolitical Profile'} dir={dir} right={<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.7)" strokeWidth="1.8" strokeLinecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>}/>
-                <div style={{ background:'white', padding:'18px 22px', fontSize:15.5, color:'#334155', lineHeight:1.9, direction:dir }}>{report.geopolitical_summary}</div>
+                <div style={{ background:'white', padding:'18px 22px', fontSize:15.5, color:'#334155', lineHeight:1.9, direction:dir }}><RichText text={report.geopolitical_summary} dir={dir}/></div>
               </div>
             )}
           </div>
@@ -874,7 +907,7 @@ export default function ReportDetail({ reportId, onBack, lang='ar' }) {
                 {(report.sfda_talking_points||[]).map((pt,i) => (
                   <li key={i} style={{ display:'flex', alignItems:'flex-start', gap:14, padding:'9px 0', borderBottom:i<report.sfda_talking_points.length-1?'1px solid #f1f5f9':'none', direction:dir }}>
                     <span style={{ fontWeight:800, fontSize:16, color:'#1c3370', flexShrink:0, minWidth:20, marginTop:1 }}>{i+1}.</span>
-                    <span style={{ fontSize:15.5, color:'#334155', lineHeight:1.7 }}>{pt}</span>
+                    <span style={{ fontSize:15.5, color:'#334155', lineHeight:1.7 }}><RichText text={pt} dir={dir}/></span>
                   </li>
                 ))}
               </ol>
