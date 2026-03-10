@@ -4,13 +4,13 @@ import { getStoredUser } from '../services/api';
 
 // ─── Design tokens (dark navy theme) ─────────────────────
 const NAV_BG     = '#0d1829';
-const NAV_ACTIVE = 'rgba(99,102,241,0.18)';
+const NAV_ACTIVE = 'rgba(255,255,255,0.08)';
 const NAV_HOV    = 'rgba(255,255,255,0.06)';
-const NAV_ACCENT = '#6366f1';
+const NAV_ACCENT = '#ffffff';
 const NAV_TEXT   = 'rgba(255,255,255,0.55)';
-const NAV_TEXTHI = '#a5b4fc';
+const NAV_TEXTHI = '#ffffff';
 const NAV_ICON   = 'rgba(255,255,255,0.30)';
-const NAV_ICONHI = '#818cf8';
+const NAV_ICONHI = '#ffffff';
 const NAV_BORDER = 'rgba(255,255,255,0.07)';
 
 /* ── V-mark logo — same as auth pages ─────────────────── */

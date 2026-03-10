@@ -420,10 +420,10 @@ export default function App() {
 
         {page!=='ai' && (
           <>
-            {/* ════ TOP BAR — matches screenshot ════ */}
+            {/* ════ TOP BAR — matches sidebar dark navy ════ */}
             <div style={{
-              background: surfaceColor,
-              borderBottom: `1px solid ${darkMode ? 'rgba(255,255,255,0.06)' : C.border}`,
+              background: darkMode ? C.navyDark : '#0d1829',
+              borderBottom: '1px solid rgba(255,255,255,0.08)',
               padding: '0 28px',
               height: 68,
               display: 'flex',
@@ -436,11 +436,11 @@ export default function App() {
 
               {/* Left/Right: Title + subtitle */}
               <div style={{ display:'flex', flexDirection:'column', gap:2, minWidth:0 }}>
-                <span style={{ fontSize:19, fontWeight:800, color: darkMode?'#f1f5f9':C.ink, fontFamily:FONT, letterSpacing: isAr?0:'-0.02em' }}>
+                <span style={{ fontSize:19, fontWeight:800, color: '#f1f5f9', fontFamily:FONT, letterSpacing: isAr?0:'-0.02em' }}>
                   {meta.title}
                 </span>
                 {meta.sub && (
-                  <span style={{ fontSize:13, color:C.ink4, fontFamily:FONT, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>
+                  <span style={{ fontSize:13, color:'rgba(255,255,255,0.50)', fontFamily:FONT, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>
                     {meta.sub}
                   </span>
                 )}
@@ -455,16 +455,26 @@ export default function App() {
                     onClick={() => setPage('new')}
                     style={{
                       display:'flex', alignItems:'center', gap:8,
-                      padding:'9px 18px',
-                      background: C.navy,
-                      color:'white', border:'none', borderRadius:9,
-                      fontSize:15, fontWeight:700, cursor:'pointer',
+                      padding:'9px 20px',
+                      background: 'linear-gradient(135deg, #1c3370 0%, #0d1829 100%)',
+                      color:'white',
+                      border:'1px solid rgba(255,255,255,0.10)',
+                      borderRadius:10,
+                      fontSize:14, fontWeight:700, cursor:'pointer',
                       fontFamily:FONT, transition:'all 0.18s',
-                      boxShadow:'0 2px 10px rgba(13,24,41,0.30)',
+                      boxShadow:'0 4px 14px rgba(13,24,41,0.40)',
                       whiteSpace:'nowrap',
                     }}
-                    onMouseEnter={e=>{ e.currentTarget.style.background=C.navyMid; e.currentTarget.style.transform='translateY(-1px)'; }}
-                    onMouseLeave={e=>{ e.currentTarget.style.background=C.navy; e.currentTarget.style.transform='none'; }}>
+                    onMouseEnter={e=>{
+                      e.currentTarget.style.background='linear-gradient(135deg, #253d82 0%, #162444 100%)';
+                      e.currentTarget.style.transform='translateY(-1px)';
+                      e.currentTarget.style.boxShadow='0 6px 18px rgba(13,24,41,0.50)';
+                    }}
+                    onMouseLeave={e=>{
+                      e.currentTarget.style.background='linear-gradient(135deg, #1c3370 0%, #0d1829 100%)';
+                      e.currentTarget.style.transform='none';
+                      e.currentTarget.style.boxShadow='0 4px 14px rgba(13,24,41,0.40)';
+                    }}>
                     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round">
                       <path d="M12 5v14M5 12h14"/>
                     </svg>
@@ -477,10 +487,10 @@ export default function App() {
                   onClick={() => setDarkMode(p=>!p)}
                   style={{
                     width:36, height:36, borderRadius:9,
-                    background: darkMode ? 'rgba(255,255,255,0.08)' : C.surface2,
-                    border: `1px solid ${darkMode?'rgba(255,255,255,0.10)':C.border}`,
+                    background: 'rgba(255,255,255,0.08)',
+                    border: '1px solid rgba(255,255,255,0.12)',
                     display:'flex', alignItems:'center', justifyContent:'center',
-                    cursor:'pointer', color: darkMode?'#fbbf24':C.ink3,
+                    cursor:'pointer', color: darkMode?'#fbbf24':'rgba(255,255,255,0.70)',
                     transition:'all 0.15s', flexShrink:0,
                   }}>
                   {darkMode ? (
@@ -545,38 +555,7 @@ export default function App() {
 
                   {/* World Map card */}
                   <Card style={{ marginBottom:20, overflow:'hidden', background: darkMode?C.navyMid:C.surface }}>
-                    <div style={{
-                      padding:'13px 20px',
-                      borderBottom:`1px solid ${darkMode?'rgba(255,255,255,0.07)':C.border}`,
-                      display:'flex', justifyContent:'space-between', alignItems:'center',
-                      direction:dir,
-                    }}>
-                      <div style={{ display:'flex', alignItems:'center', gap:10 }}>
-                        {/* Globe icon tile */}
-                        <div style={{ width:30, height:30, borderRadius:8, background:'rgba(56,189,248,0.12)', border:'1px solid rgba(56,189,248,0.2)', display:'flex', alignItems:'center', justifyContent:'center' }}>
-                          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" strokeWidth="2" strokeLinecap="round">
-                            <circle cx="12" cy="12" r="10"/>
-                            <line x1="2" y1="12" x2="22" y2="12"/>
-                            <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
-                          </svg>
-                        </div>
-                        <div>
-                          <div style={{ fontWeight:700, fontSize:15.5, color: darkMode?'#f1f5f9':C.ink }}>{t.mapTitle}</div>
-                          <div style={{ fontSize:10.5, color:C.ink4, marginTop:1 }}>{t.mapSubtitle}</div>
-                        </div>
-                      </div>
-                      {/* Risk legend */}
-                      <div style={{ display:'flex', gap:14 }}>
-                        {[[C.green,t.riskLow],[C.amber,t.riskMedium],[C.coral,t.riskHigh]].map(([c,l])=>(
-                          <span key={l} style={{ display:'flex', alignItems:'center', gap:5, fontSize:10.5, color:C.ink3 }}>
-                            <span style={{ width:7, height:7, borderRadius:'50%', background:c, display:'inline-block' }}/>{l}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                    <div style={{ maxHeight:220, overflow:'hidden' }}>
-                      <WorldMap upcomingReports={upcoming}/>
-                    </div>
+                    <WorldMap upcomingReports={upcoming}/>
                   </Card>
 
                   {/* Live feeds — 2 columns */}
