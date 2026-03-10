@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import ReactDOM from 'react-dom';
 import Sidebar from './components/Sidebar';
 import WorldMap from './components/WorldMap';
+import { fetchIntelFeed, fetchWHOAlerts } from './services/newsService';
 import NewReportForm  from './components/NewReportForm';
 import ReportDetail from './components/ReportDetail';
 import AIAssistant from './components/AIAssistant';
@@ -261,15 +262,12 @@ export default function App() {
 
   const STATIC = {
     feed:[
-      {icon:'💊',title:'FDA Approves Novel Gene Therapy for Rare Metabolic Disorder',summary:'The US FDA granted accelerated approval for a first-in-class gene therapy targeting a rare inherited metabolic condition, benefiting an estimated 12,000 patients globally.',source:'FDA.gov',time:'2 hours ago',impact:'HIGH IMPACT',url:'https://www.fda.gov/news-events/press-announcements'},
-      {icon:'🇸🇦',title:'SFDA Signs Regulatory Cooperation Agreement with EMA',summary:'The Saudi Food and Drug Authority formalized a bilateral regulatory cooperation framework with the European Medicines Agency.',source:'SFDA',time:'4 hours ago',impact:'HIGH IMPACT',url:'https://www.sfda.gov.sa/en/news'},
-      {icon:'🌍',title:'WHO Releases Updated Essential Medicines List — 15 New Additions',summary:'The World Health Organization added 15 medicines to its Essential Medicines List, including novel oncology and antimicrobial agents.',source:'WHO',time:'6 hours ago',url:'https://www.who.int'},
+      {icon:'💊',title:'Loading latest health & regulatory news...',summary:'Fetching real-time news from FDA, WHO, SFDA and global health sources.',source:'',time:'',url:''},
       {icon:'🔬',title:'G20 Health Ministers Endorse Global AMR Action Framework',summary:'Health ministers from G20 nations pledged $1.2B toward new antibiotic development incentives through 2027.',source:'Reuters',time:'Yesterday',url:'https://www.reuters.com'},
       {icon:'📋',title:'ICH Publishes New Guideline on Pharmaceutical Quality Risk Management',summary:'The ICH released updated Q9(R1) guidance on quality risk management, affecting GMP compliance requirements globally.',source:'ICH',time:'Yesterday',url:'https://www.ich.org'},
     ],
     who:[
-      {type:'Alert',typeColor:'#7c3aed',title:'H5N1 Avian Influenza — Enhanced Surveillance in Southeast Asia',summary:'WHO calls for heightened monitoring of H5N1 transmission in poultry workers across Vietnam, Thailand and Indonesia.',tags:['Vietnam','Thailand','Indonesia'],url:'https://www.who.int'},
-      {type:'Update',typeColor:'#d97706',title:'MERS-CoV Sporadic Cases — Arabian Peninsula Advisory',summary:'Sporadic MERS-CoV cases continue to be reported in Saudi Arabia and UAE. WHO recommends standard infection prevention measures.',tags:['Saudi Arabia','UAE','Qatar'],url:'https://www.who.int'},
+      {type:'Update',typeColor:'#d97706',title:'Loading latest WHO health alerts...',summary:'Fetching real-time alerts from the World Health Organization.',tags:[],url:'https://www.who.int'},
     ]
   };
 
@@ -277,18 +275,24 @@ export default function App() {
     if (showLoader) setFeedLoading(true);
     try {
       const token = localStorage.getItem('sfda_token')||'';
-      const res = await fetch('/api/intelligence-feed/',{headers:{Authorization:`Token ${token}`}});
-      if (!res.ok) throw new Error();
-      const data = await res.json();
-      if (data.feed&&data.who) {
-        if (liveFeed?.feed) {
-          const old = new Set(liveFeed.feed.map(i=>i.title));
-          const nids = new Set(data.feed.map((x,i)=>old.has(x.title)?null:i).filter(i=>i!==null));
+      // Fetch real news from RSS feeds
+      const [intelItems, whoItems] = await Promise.all([
+        fetchIntelFeed(),
+        fetchWHOAlerts(),
+      ]);
+      const feed = intelItems || [];
+      const who  = whoItems  || [];
+      // Only update liveFeed if we got actual results
+      if (feed.length > 0 || who.length > 0) {
+        if (liveFeed?.feed?.length) {
+          const oldTitles = new Set(liveFeed.feed.map(i=>i.title));
+          const nids = new Set(feed.map((x,i)=>oldTitles.has(x.title)?null:i).filter(i=>i!==null));
           setNewItemIds(nids); setTimeout(()=>setNewItemIds(new Set()),4000);
         }
-        setLiveFeed(data); setFeedCountdown(300);
+        setLiveFeed({ feed, who });
+        setFeedCountdown(300);
       }
-    } catch {}
+    } catch(e) { console.warn('[news]', e.message); }
     finally { setFeedLoading(false); }
   };
 
@@ -570,10 +574,10 @@ export default function App() {
                   </Card>
 
                   {/* Live feeds — 2 columns */}
-                  <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:16, marginBottom:24 }}>
+                  <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:16, marginBottom:24, minWidth:0 }}>
 
                     {/* Intel feed */}
-                    <Card style={{ background: darkMode?C.navyMid:C.surface }}>
+                    <Card style={{ background: darkMode?C.navyMid:C.surface, minWidth:0, overflow:'hidden' }}>
                       <div style={{ padding:'13px 18px 11px', borderBottom:`1px solid ${darkMode?'rgba(255,255,255,0.07)':C.border}`, display:'flex', alignItems:'center', justifyContent:'space-between' }}>
                         <div style={{ display:'flex', alignItems:'center', gap:9 }}>
                           <div style={{ width:30, height:30, borderRadius:8, background:C.blueBg, display:'flex', alignItems:'center', justifyContent:'center', fontSize:13 }}>📰</div>
@@ -608,14 +612,14 @@ export default function App() {
                           const active=i===activeNewsIdx, isNew=newItemIds.has(i);
                           return (
                             <div key={i}
-                              onClick={()=>{ const q=encodeURIComponent((item.title||'')+(item.source?' '+item.source:'')); window.open('https://www.google.com/search?q='+q+'&tbm=nws','_blank'); }}
+                              onClick={()=>{ if(item.url && item.url !== '#') window.open(item.url,'_blank','noopener'); }}
                               style={{ display:'flex', gap:10, padding:'10px 16px', borderBottom:i<feed.length-1?`1px solid ${C.border}`:'none', alignItems:'flex-start', cursor:'pointer', transition:'background 0.15s', background:isNew?'rgba(99,102,241,0.05)':active?'rgba(99,102,241,0.03)':'transparent', borderInlineStart:active?`2px solid ${C.indigo}`:'2px solid transparent' }}>
                               <div style={{ width:30, height:30, borderRadius:8, background:active?C.indigoBg:C.surface2, border:`1px solid ${active?'rgba(99,102,241,0.2)':C.border}`, display:'flex', alignItems:'center', justifyContent:'center', fontSize:12, flexShrink:0 }}>
                                 {isNew?'🆕':(item.icon||'📰')}
                               </div>
                               <div style={{ flex:1, minWidth:0 }}>
-                                <div style={{ fontWeight:600, fontSize:12, color:active?C.indigo:C.ink, marginBottom:3, lineHeight:1.45, fontFamily:FONT }}>{item.title}</div>
-                                <div style={{ fontSize:10.5, color:C.ink3, marginBottom:4, lineHeight:1.5, fontFamily:FONT }}>{item.summary}</div>
+                                <div style={{ fontWeight:600, fontSize:12, color:active?C.indigo:C.ink, marginBottom:3, lineHeight:1.45, fontFamily:FONT, wordBreak:'break-word', overflowWrap:'anywhere' }}>{item.title}</div>
+                                <div style={{ fontSize:10.5, color:C.ink3, marginBottom:4, lineHeight:1.5, fontFamily:FONT, wordBreak:'break-word', overflowWrap:'anywhere', overflow:'hidden', display:'-webkit-box', WebkitLineClamp:3, WebkitBoxOrient:'vertical' }}>{item.summary}</div>
                                 <div style={{ display:'flex', alignItems:'center', gap:5, fontSize:9.5, color:C.ink4 }}>
                                   <span>{item.source}</span>
                                   <span style={{ width:2, height:2, borderRadius:'50%', background:C.ink4 }}/>
@@ -663,12 +667,12 @@ export default function App() {
                           <div key={i} style={{ padding:'13px 16px', borderBottom:i<who.length-1?`1px solid ${C.border}`:'none' }}>
                             <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:7 }}>
                               <span style={{ background:item.typeColor||C.coral, color:'white', borderRadius:6, padding:'2px 10px', fontSize:10, fontWeight:700 }}>{item.type}</span>
-                              <a href={'https://www.google.com/search?q='+encodeURIComponent('WHO '+(item.title||''))+'&tbm=nws'} target="_blank" rel="noopener noreferrer"
+                              <a href={item.url || 'https://www.who.int/news'} target="_blank" rel="noopener noreferrer"
                                 style={{ fontSize:10.5, color:C.indigo, fontWeight:600, textDecoration:'none' }}>
                                 {t.feedReadMore} ↗
                               </a>
                             </div>
-                            <a href={'https://www.google.com/search?q='+encodeURIComponent('WHO '+(item.title||''))+'&tbm=nws'} target="_blank" rel="noopener noreferrer"
+                            <a href={item.url || 'https://www.who.int/news'} target="_blank" rel="noopener noreferrer"
                               style={{ fontWeight:600, fontSize:12.5, color: darkMode?'#f1f5f9':C.ink, display:'block', textDecoration:'none', lineHeight:1.4, marginBottom:6, fontFamily:FONT }}
                               onMouseEnter={e=>{ e.currentTarget.style.color=C.indigo; }}
                               onMouseLeave={e=>{ e.currentTarget.style.color=darkMode?'#f1f5f9':C.ink; }}>

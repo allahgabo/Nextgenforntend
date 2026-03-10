@@ -182,11 +182,21 @@ export const generateAI = async (reportId) => {
 
   console.log('[generateAI] payload →', JSON.stringify(payload, null, 2));
 
-  const res = await fetch(BRIEFING_URL, {
+  // Try proxy first, then fall back to direct Cloud Run call
+  const CLOUD_RUN = 'https://briefing-api-365936249363.me-central1.run.app';
+  const fetchOptions = {
     method:  'POST',
     headers: { 'Content-Type': 'application/json' },
     body:    JSON.stringify(payload),
-  });
+  };
+
+  let res = await fetch(BRIEFING_URL, fetchOptions);
+
+  // If proxy returns 404 (path not rewritten yet), call Cloud Run directly
+  if (res.status === 404) {
+    console.warn('[generateAI] proxy 404 — trying Cloud Run directly');
+    res = await fetch(CLOUD_RUN + '/briefing', fetchOptions);
+  }
 
   if (!res.ok) {
     let msg = 'Briefing API error: ' + res.status;
@@ -224,50 +234,74 @@ export const generateBriefing = async (formData) => {
 // ── Chat assistant — POST /chat ───────────────────────────────────────────
 
 export const chatAssistant = async (messages, system, briefingReport) => {
+  const history = messages.slice(0, -1).map(m => ({
+    role:    m.role,
+    content: typeof m.content === 'string' ? m.content : String(m.content || ''),
+  }));
+  const lastMsg = messages[messages.length - 1];
+  const message = typeof lastMsg?.content === 'string' ? lastMsg.content : String(lastMsg?.content || '');
+  const briefing_context_json = briefingReport ? JSON.stringify(briefingReport) : (system || '');
+
+  const CLOUD_RUN_CHAT = 'https://briefing-api-365936249363.me-central1.run.app';
+  // ── Try Cloud Run /chat first ─────────────────────────
   try {
-    // Build history array from messages (exclude last user message)
-    const history = messages.slice(0, -1).map(m => ({
-      role:    m.role,
-      content: typeof m.content === 'string' ? m.content : String(m.content || ''),
-    }));
-
-    // Last message is the current user question
-    const lastMsg = messages[messages.length - 1];
-    const message = typeof lastMsg?.content === 'string' ? lastMsg.content : String(lastMsg?.content || '');
-
-    // Pass the briefing report as context if available
-    const briefing_context_json = briefingReport
-      ? JSON.stringify(briefingReport)
-      : (system || '');
-
-    const res = await fetch('/api/chat', {
+    let res = await fetch('/api/chat', {
       method:  'POST',
       headers: { 'Content-Type': 'application/json' },
       body:    JSON.stringify({ message, briefing_context_json, history }),
     });
-
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({}));
-      throw new Error(err?.detail || err?.error || res.status);
+    // If proxy returns 404, call Cloud Run directly
+    if (res.status === 404) {
+      console.warn('[chatAssistant] proxy 404 — trying Cloud Run directly');
+      res = await fetch(CLOUD_RUN_CHAT + '/chat', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message, briefing_context_json, history }),
+      });
     }
-
-    const data = await res.json();
-    // API returns either a plain string or { response: "..." }
-    let text = typeof data === 'string'
-      ? data
-      : (data?.response || data?.message || data?.content || JSON.stringify(data));
-    // Unescape literal \n sequences into real newlines
-    text = text.replace(/\\n/g, '\n').replace(/\\t/g, '  ');
-    return { data: { content: [{ type: 'text', text }] } };
-
+    if (res.ok) {
+      const data = await res.json();
+      let text = typeof data === 'string' ? data : (data?.response || data?.message || data?.content || '');
+      text = text.replace(/\\n/g, '\n').replace(/\\t/g, '  ');
+      if (text) return { data: { content: [{ type: 'text', text }] } };
+    }
   } catch (e) {
-    console.warn('[chatAssistant] failed:', e.message);
-    return {
-      data: {
-        content: [{ type: 'text', text: 'تعذّر الاتصال بالمساعد الذكي. يرجى المحاولة لاحقاً.' }],
-      },
-    };
+    console.warn('[chatAssistant] Cloud Run failed:', e.message);
   }
+
+  // ── Fallback: call Anthropic API directly ─────────────
+  try {
+    const contextSnippet = briefingReport
+      ? `You are helping with a briefing report for: ${briefingReport.conference_name || ''} in ${briefingReport.city || ''}, ${briefingReport.country || ''}.`
+      : (system || 'You are a helpful diplomatic briefing assistant.');
+
+    const apiMessages = [
+      ...history.map(m => ({ role: m.role, content: m.content })),
+      { role: 'user', content: message },
+    ];
+
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        system: contextSnippet,
+        messages: apiMessages,
+      }),
+    });
+
+    if (res.ok) {
+      const data = await res.json();
+      const text = data?.content?.[0]?.text || '';
+      if (text) return { data: { content: [{ type: 'text', text }] } };
+    }
+  } catch (e) {
+    console.warn('[chatAssistant] Anthropic fallback failed:', e.message);
+  }
+
+  return {
+    data: { content: [{ type: 'text', text: 'تعذّر الاتصال بالمساعد الذكي. يرجى المحاولة لاحقاً.' }] },
+  };
 };
 
 // ── PDF / Preview ─────────────────────────────────────────────────────────

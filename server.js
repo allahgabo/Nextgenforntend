@@ -38,6 +38,40 @@ function proxyPost(cloudPath, req, res) {
 app.post('/api/briefing', (req, res) => proxyPost('/briefing', req, res));
 app.post('/api/chat',     (req, res) => proxyPost('/chat',     req, res));
 
+// ── News RSS proxy (server-side fetch avoids CORS) ────────
+const http  = require('http');
+
+function fetchUrl(urlStr, cb) {
+  const u    = new URL(urlStr);
+  const lib  = u.protocol === 'https:' ? https : http;
+  const opts = { hostname: u.hostname, path: u.pathname + u.search, headers: { 'User-Agent': 'Mozilla/5.0', 'Accept': 'application/rss+xml,application/xml,text/xml,*/*' }, timeout: 8000 };
+  const req  = lib.get(opts, (r) => {
+    let data = '';
+    r.on('data', c => data += c);
+    r.on('end', () => cb(null, data));
+  });
+  req.on('error', cb);
+  req.on('timeout', () => { req.destroy(); cb(new Error('timeout')); });
+}
+
+app.get('/api/news/intel', (req, res) => {
+  const url = 'https://news.google.com/rss/search?q=FDA+SFDA+WHO+health+regulation+pharmaceutical+approval&hl=en-US&gl=US&ceid=US:en';
+  fetchUrl(url, (err, data) => {
+    if (err) return res.status(502).json({ error: err.message });
+    res.setHeader('Content-Type', 'application/xml');
+    res.send(data);
+  });
+});
+
+app.get('/api/news/who', (req, res) => {
+  const whoUrl = 'https://news.google.com/rss/search?q=WHO+disease+outbreak+health+alert+epidemic&hl=en-US&gl=US&ceid=US:en';
+  fetchUrl(whoUrl, (err, data) => {
+    if (err) return res.status(502).json({ error: err.message });
+    res.setHeader('Content-Type', 'application/xml');
+    res.send(data);
+  });
+});
+
 // ── Serve Vite build ─────────────────────────────────────
 const candidates = [
   path.join(process.cwd(), 'dist'),

@@ -39,7 +39,7 @@ const L = {
     eventName:'اسم الحدث', eventNamePH:'مثال: مؤتمر السفر والتحول الرقمي 2024',
     eventType:'نوع الحدث', eventTypePH:'اختر نوع الحدث',
     reportLang:'لغة التقرير', langAr:'Arabic (العربية)', langEn:'English',
-    eventWebsite:'رابط الحدث (اختياري)', websitePH:'https://event-website.com',
+    eventWebsite:'رابط الحدث *', websitePH:'https://event-website.com',
     location:'الموقع',
     country:'الدولة', countryPH:'مثال: المملكة العربية',
     city:'المدينة', cityPH:'مثال: الرياض',
@@ -54,7 +54,7 @@ const L = {
     tipsList:['استخدم لغة مهنية ومباشرة','حدد التوصيات بوضوح'],
     aiChatLabel:'مقابلة فورية (AI)', aiChatPH:'جاري تحليل الطلب...',
     dir:'rtl',
-    required:'يرجى تعبئة: اسم الحدث، المدينة، الدولة، وتاريخ البدء.',
+    required:'يرجى تعبئة جميع الحقول المطلوبة: اسم الحدث، رابط الحدث، روابط المتحدثين، المدينة، الدولة، وتاريخ البدء.',
     genTitle:'جاري إنشاء التقرير', genSubtitle:'يقوم الذكاء الاصطناعي بإعداد إحاطة استخباراتية متكاملة...',
     doneTitle:'تم إنشاء التقرير!',
     viewPDF:'📄 عرض PDF', previewHTML:'👁️ معاينة HTML', backDash:'→ العودة للوحة التحكم',
@@ -74,7 +74,7 @@ const L = {
     eventName:'Event Name', eventNamePH:'e.g., Milken Institute Global Conference 2026',
     eventType:'Event Type', eventTypePH:'Select event type',
     reportLang:'Report Language', langAr:'Arabic (العربية)', langEn:'English',
-    eventWebsite:'Event Website (optional)', websitePH:'https://event-website.com',
+    eventWebsite:'Event Website *', websitePH:'https://event-website.com',
     location:'Location',
     country:'Country', countryPH:'e.g., Saudi Arabia',
     city:'City', cityPH:'e.g., Riyadh',
@@ -89,7 +89,7 @@ const L = {
     tipsList:['Use professional, direct language','Define recommendations clearly'],
     aiChatLabel:'Live Chat (AI)', aiChatPH:'Analyzing your request...',
     dir:'ltr',
-    required:'Please fill in: Event Name, City, Country, and Start Date.',
+    required:'Please fill in all required fields: Event Name, Event URL, Speaker URLs, City, Country, and Start Date.',
     genTitle:'Generating Your Report', genSubtitle:'AI is compiling a complete intelligence briefing...',
     doneTitle:'Report Generated!',
     viewPDF:'📄 View PDF', previewHTML:'👁️ Preview HTML', backDash:'← Back to Dashboard',
@@ -261,7 +261,7 @@ export default function NewReportForm({ onSuccess, onCancel, lang = 'ar' }) {
 
   const handleGenerate = async () => {
     if (submittingRef.current) return;
-    if (!form.event_name || !form.city || !form.country || !form.start_date) { setError(l.required); return; }
+    if (!form.event_name || !form.city || !form.country || !form.start_date || !form.event_website || !form.agenda_speakers_url || !form.speakers_url) { setError(l.required); return; }
     submittingRef.current = true; setIsSubmitting(true); setError(''); setPhase('generating');
     let idx = 0;
     const iv = setInterval(() => { setGenStep(l.genSteps[idx % l.genSteps.length]); idx++; }, 700);
@@ -443,11 +443,11 @@ export default function NewReportForm({ onSuccess, onCancel, lang = 'ar' }) {
             {/* Speaker & Agenda URLs */}
             <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:14, marginTop:14 }}>
               <div>
-                <FL t={isAr ? 'رابط جدول الأعمال / المتحدثين (اختياري)' : 'Agenda / Speakers URL (optional)'}/>
+                <FL t={isAr ? 'رابط جدول الأعمال / المتحدثين *' : 'Agenda / Speakers URL *'}/>
                 <input style={inp(dir)} placeholder="https://..." value={form.agenda_speakers_url} onChange={set('agenda_speakers_url')} onFocus={onFoc} onBlur={onBlr}/>
               </div>
               <div>
-                <FL t={isAr ? 'رابط صفحة المتحدثين (اختياري)' : 'Speakers Page URL (optional)'}/>
+                <FL t={isAr ? 'رابط صفحة المتحدثين *' : 'Speakers Page URL *'}/>
                 <input style={inp(dir)} placeholder="https://..." value={form.speakers_url} onChange={set('speakers_url')} onFocus={onFoc} onBlur={onBlr}/>
               </div>
             </div>

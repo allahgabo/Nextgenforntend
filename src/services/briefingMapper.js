@@ -102,7 +102,8 @@ export function mapBriefingToReport(apiResponse, formData) {
   const conferenceData = {
     organizer:     cr.organiser       || '',
     organizer_ceo: cr.organiser_ceo   || '',
-    overview:      cr.theme_or_slogan || '',
+    theme:         cr.theme_or_slogan || '',
+    overview:      cr.overview || '',
     event_leader:  cr.organiser_ceo   || cr.organiser || '',
     logo_url:      '',
     attendees:     cr.approx_attendees || '',

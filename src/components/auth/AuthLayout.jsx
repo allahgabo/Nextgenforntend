@@ -135,14 +135,14 @@ export default function AuthLayout({ children, lang: propLang, onLangChange }) {
         {/* Photo */}
         <div style={{
           position: 'absolute', inset: 0,
-          backgroundImage: `url('https://images.unsplash.com/photo-1542816417-0983c9c9ad53?w=1200&q=90&fit=crop')`,
+          backgroundImage: `url('https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=1200&q=90&fit=crop&auto=format')`,
           backgroundSize: 'cover', backgroundPosition: 'center',
         }} />
 
         {/* Dark overlay */}
         <div style={{
           position: 'absolute', inset: 0,
-          background: 'linear-gradient(160deg,rgba(10,22,60,0.55) 0%,rgba(12,28,75,0.65) 50%,rgba(6,16,45,0.82) 100%)',
+          background: 'linear-gradient(160deg,rgba(5,15,50,0.45) 0%,rgba(10,25,80,0.58) 50%,rgba(4,12,40,0.80) 100%)',
         }} />
 
         {/* Hero text — aligned to language direction */}

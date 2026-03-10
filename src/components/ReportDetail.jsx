@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { getReport } from '../services/api';
-import { downloadPDF } from '../utils/downloadPDF';
 import { T, translateCountry } from '../i18n';
 
 const initials = n => (n||'').split(' ').slice(0,2).map(w=>w[0]||'').join('').toUpperCase()||'?';
@@ -95,11 +94,9 @@ function ExportBtn({ reportId, eventName, font }) {
   return (
     <button
       disabled={busy}
-      onClick={async () => {
+      onClick={() => {
         setBusy(true);
-        try { await downloadPDF(reportId, `SFDA_${eventName}.pdf`); }
-        catch(e) { alert('PDF export failed: ' + e.message); }
-        finally { setBusy(false); }
+        setTimeout(() => { window.print(); setBusy(false); }, 200);
       }}
       style={{
         display:'flex', alignItems:'center', gap:7, padding:'9px 18px',
@@ -150,8 +147,23 @@ export default function ReportDetail({ reportId, onBack, lang='ar' }) {
   const card = { background:'white', border:`1px solid ${CARD_BORDER}`, borderRadius:14, padding:'22px 24px', marginTop:16, boxShadow:SHADOW_SM };
 
   return (
-    <div style={{ background:'#f1f5f9', minHeight:'100%', fontFamily:font, direction:dir }}>
-      <style>{`@keyframes rd-spin{to{transform:rotate(360deg)}}`}</style>
+    <div id="report-print-area" style={{ background:'#f1f5f9', minHeight:'100%', fontFamily:font, direction:dir }}>
+      <style>{`
+        @keyframes rd-spin{to{transform:rotate(360deg)}}
+        @media print {
+          @page { size: A4; margin: 15mm; }
+          body { background: white !important; }
+          /* Hide everything outside the report */
+          body > #root > * > *:not(#report-print-area),
+          nav, aside, header, footer,
+          button, .no-print { display: none !important; }
+          /* Show report content */
+          #report-print-area { display: block !important; background: white !important; }
+          #report-print-area button { display: none !important; }
+          /* Ensure backgrounds and colors print */
+          * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+        }
+      `}</style>
       <div style={{ padding:'20px 28px 60px', maxWidth:1100, margin:'0 auto' }}>
 
         {/* BREADCRUMB + EXPORT */}
@@ -215,9 +227,9 @@ export default function ReportDetail({ reportId, onBack, lang='ar' }) {
 
         {/* TEXT SECTIONS: Summary / History / KSA Participation */}
         {[
-          { key:'conference_summary',        icon:'📄', title:t.conferenceSummaryTitle },
-          { key:'conference_history',        icon:'🕐', title:t.conferenceHistoryTitle },
-          { key:'ksa_participation_history', icon:'👤', title:t.ksaParticipationHistoryTitle },
+          { key:'conference_summary',        icon:'📄', title:(isAr ? 'ملخص المؤتمر' : 'Conference Summary') },
+          { key:'conference_history',        icon:'🕐', title:(isAr ? 'تاريخ المؤتمر' : 'Conference History') },
+          { key:'ksa_participation_history', icon:'👤', title:(isAr ? 'مشاركة المملكة في المؤتمر' : 'KSA Participation History') },
         ].map(({ key, icon, title }) => report[key] ? (
           <div key={key} style={{ marginTop:16, borderRadius:14, border:`1px solid ${CARD_BORDER}`, overflow:'hidden', boxShadow:SHADOW_SM }}>
             <SecHead icon={icon} title={title} dir={dir}/>
@@ -232,13 +244,13 @@ export default function ReportDetail({ reportId, onBack, lang='ar' }) {
           <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:16, marginTop:16 }}>
             {report.country_info?.overview && (
               <div style={{ borderRadius:14, border:`1px solid ${CARD_BORDER}`, overflow:'hidden', boxShadow:SHADOW_SM }}>
-                <SecHead title={t.countryBriefTitle} dir={dir} right={<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.7)" strokeWidth="1.8" strokeLinecap="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>}/>
+                <SecHead title={isAr ? 'نبذة عن الدولة' : 'Country Brief'} dir={dir} right={<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.7)" strokeWidth="1.8" strokeLinecap="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>}/>
                 <div style={{ background:'white', padding:'18px 22px', fontSize:13.5, color:'#334155', lineHeight:1.9, direction:dir }}>{report.country_info.overview}</div>
               </div>
             )}
             {report.sfda_relevance && (
               <div style={{ borderRadius:14, border:`1px solid ${CARD_BORDER}`, overflow:'hidden', boxShadow:SHADOW_SM }}>
-                <SecHead title={t.sfdaRelevanceTitle} dir={dir} right={<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.7)" strokeWidth="1.8" strokeLinecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 8 12 12 14 14"/></svg>}/>
+                <SecHead title={isAr ? 'الصلة بالهيئة' : 'Relevance to the Authority'} dir={dir} right={<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.7)" strokeWidth="1.8" strokeLinecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 8 12 12 14 14"/></svg>}/>
                 <div style={{ background:'white', padding:'18px 22px', fontSize:13.5, color:'#334155', lineHeight:1.9, direction:dir }}>{report.sfda_relevance}</div>
               </div>
             )}
@@ -250,13 +262,13 @@ export default function ReportDetail({ reportId, onBack, lang='ar' }) {
           <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:16, marginTop:16 }}>
             {report.bilateral_relations && (
               <div style={{ borderRadius:14, border:`1px solid ${CARD_BORDER}`, overflow:'hidden', boxShadow:SHADOW_SM }}>
-                <SecHead title={t.bilateralRelationsTitle} dir={dir} right={<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.7)" strokeWidth="1.8" strokeLinecap="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>}/>
+                <SecHead title={isAr ? 'العلاقات الثنائية' : 'Bilateral Relations'} dir={dir} right={<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.7)" strokeWidth="1.8" strokeLinecap="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>}/>
                 <div style={{ background:'white', padding:'18px 22px', fontSize:13.5, color:'#334155', lineHeight:1.9, direction:dir }}>{report.bilateral_relations}</div>
               </div>
             )}
             {report.geopolitical_summary && (
               <div style={{ borderRadius:14, border:`1px solid ${CARD_BORDER}`, overflow:'hidden', boxShadow:SHADOW_SM }}>
-                <SecHead title={t.geopoliticalSummaryTitle} dir={dir} right={<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.7)" strokeWidth="1.8" strokeLinecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>}/>
+                <SecHead title={isAr ? 'الملف الجيوسياسي' : 'Geopolitical Profile'} dir={dir} right={<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.7)" strokeWidth="1.8" strokeLinecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>}/>
                 <div style={{ background:'white', padding:'18px 22px', fontSize:13.5, color:'#334155', lineHeight:1.9, direction:dir }}>{report.geopolitical_summary}</div>
               </div>
             )}
@@ -268,13 +280,13 @@ export default function ReportDetail({ reportId, onBack, lang='ar' }) {
           <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:16, marginTop:16 }}>
             {report.entry_requirements && (
               <div style={{ borderRadius:14, border:`1px solid ${CARD_BORDER}`, overflow:'hidden', boxShadow:SHADOW_SM }}>
-                <SecHead title={t.entryRequirementsTitle} dir={dir} right={<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.7)" strokeWidth="1.8" strokeLinecap="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>}/>
+                <SecHead title={isAr ? 'متطلبات الدخول والإجراءات' : 'Entry Requirements'} dir={dir} right={<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.7)" strokeWidth="1.8" strokeLinecap="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>}/>
                 <div style={{ background:'white', padding:'18px 22px', fontSize:13.5, color:'#334155', lineHeight:1.9, direction:dir }}>{report.entry_requirements}</div>
               </div>
             )}
             {report.leadership_brief && (
               <div style={{ borderRadius:14, border:`1px solid ${CARD_BORDER}`, overflow:'hidden', boxShadow:SHADOW_SM }}>
-                <SecHead title={t.leadershipBriefTitle} dir={dir} right={<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.7)" strokeWidth="1.8" strokeLinecap="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>}/>
+                <SecHead title={isAr ? 'القيادة والحكومة' : 'Leadership & Government'} dir={dir} right={<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.7)" strokeWidth="1.8" strokeLinecap="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>}/>
                 <div style={{ background:'white', padding:'18px 22px', fontSize:13.5, color:'#334155', lineHeight:1.9, direction:dir }}>{report.leadership_brief}</div>
               </div>
             )}
@@ -284,7 +296,7 @@ export default function ReportDetail({ reportId, onBack, lang='ar' }) {
         {/* Trade Exchange */}
         {report.trade_exchange && (
           <div style={{ marginTop:16, borderRadius:14, border:`1px solid ${CARD_BORDER}`, overflow:'hidden', boxShadow:SHADOW_SM }}>
-            <SecHead title={t.bilateralTradeTitle} dir={dir} right={<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.7)" strokeWidth="1.8" strokeLinecap="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>}/>
+            <SecHead title={isAr ? 'العلاقات التجارية الثنائية' : 'Bilateral Trade Relations'} dir={dir} right={<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.7)" strokeWidth="1.8" strokeLinecap="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>}/>
             <div style={{ background:'white', padding:'18px 22px', fontSize:13.5, color:'#334155', lineHeight:1.9, direction:dir }}>
               {report.trade_exchange}
             </div>
@@ -293,7 +305,7 @@ export default function ReportDetail({ reportId, onBack, lang='ar' }) {
 
         {/* CONFERENCE DATA */}
         <div style={{ marginTop:16 }}>
-          <SecBar icon="📅" title={t.conferenceDataTitle}/>
+          <SecBar icon="📅" title={isAr ? 'بيانات المؤتمر والمحاور الرئيسية' : 'Conference Data & Main Themes'}/>
           <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:14 }}>
             <div style={{ background:'#f4f6f9', border:`1px solid #e2e8f0`, borderRadius:14, padding:'18px', display:'flex', flexDirection:'column', alignItems:'center' }}>
               <div style={{ fontSize:11, color:'#94a3b8', fontWeight:700, marginBottom:14, alignSelf:'flex-start' }}>{t.organizerLabel}</div>
@@ -332,19 +344,19 @@ export default function ReportDetail({ reportId, onBack, lang='ar' }) {
               </div>
             </div>
           </div>
-          {cd.overview && (
+          {(cd.theme || cd.overview) && (
             <div style={{ marginTop:16, ...card, padding:'16px 20px' }}>
               <div style={{ fontSize:12, fontWeight:800, color:'#1c3370', marginBottom:10 }}>
-                <div style={{ background:'#1c3370', color:'white', borderRadius:6, padding:'3px 10px', fontSize:11, display:'inline-block' }}>{t.overview}</div>
+                <div style={{ background:'#1c3370', color:'white', borderRadius:6, padding:'3px 10px', fontSize:11, display:'inline-block' }}>{isAr ? 'شعار المؤتمر' : 'Conference Theme'}</div>
               </div>
-              <Overview text={cd.overview}/>
+              <Overview text={cd.theme || cd.overview}/>
             </div>
           )}
         </div>
 
         {/* COUNTRY INFO */}
         <div style={{ marginTop:16 }}>
-          <SecBar icon="🌐" title={t.generalInfoTitle}/>
+          <SecBar icon="🌐" title={isAr ? 'معلومات عامة' : 'General Information'}/>
           <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:14, marginBottom:16 }}>
             <div style={{ background:'#1c3370', borderRadius:14, padding:'22px', display:'flex', flexDirection:'column', alignItems:'center', gap:12 }}>
               <div style={{ fontSize:11, color:'rgba(255,255,255,0.5)', fontWeight:700, alignSelf:'flex-start' }}>{t.headOfStateLabel}</div>
@@ -365,7 +377,7 @@ export default function ReportDetail({ reportId, onBack, lang='ar' }) {
           {ci.overview && (
             <div style={{ ...card, padding:'16px 20px', marginTop:0 }}>
               <div style={{ marginBottom:10 }}>
-                <div style={{ background:'#1c3370', color:'white', borderRadius:6, padding:'3px 10px', fontSize:11, fontWeight:800, display:'inline-block' }}>{t.overview}</div>
+                <div style={{ background:'#1c3370', color:'white', borderRadius:6, padding:'3px 10px', fontSize:11, fontWeight:800, display:'inline-block' }}>{isAr ? 'النظرة الاقتصادية' : 'Economic Overview'}</div>
               </div>
               <Overview text={ci.overview}/>
             </div>
@@ -386,7 +398,7 @@ export default function ReportDetail({ reportId, onBack, lang='ar' }) {
         {/* VISIT OBJECTIVES */}
         {(report.visit_objectives||[]).length > 0 && (
           <div style={{ marginTop:16 }}>
-            <SecBar icon="🎯" title={t.visitObjectivesTitle}/>
+            <SecBar icon="🎯" title={isAr ? 'المعلومات الأساسية للزيارة' : 'Basic Visit Information'}/>
             <div style={{ background:'white', borderRadius:14, border:`1px solid ${CARD_BORDER}`, padding:'18px 20px', boxShadow:SHADOW_SM }}>
               {(report.visit_objectives||[]).map((o,i) => (
                 <div key={i} style={{ display:'flex', alignItems:'flex-start', gap:12, padding:'10px 0', borderBottom:i<report.visit_objectives.length-1?'1px solid #f1f5f9':'none' }}>
@@ -403,7 +415,7 @@ export default function ReportDetail({ reportId, onBack, lang='ar' }) {
         {/* DELEGATION */}
         {(report.delegation||[]).length > 0 && (
           <div style={{ marginTop:16 }}>
-            <SecBar icon="👥" title={t.delegationTitle2}/>
+            <SecBar icon="👥" title={isAr ? 'قائمة الوفد' : 'Delegation List'}/>
             <div style={{ ...card, marginTop:0 }}>
               <table style={{ width:'100%', borderCollapse:'collapse', fontSize:13 }}>
                 <TblHead cols={['#', isAr?'الاسم':'Name', isAr?'المسمى الوظيفي':'Title', isAr?'الجهة':'Department']}/>
@@ -425,7 +437,7 @@ export default function ReportDetail({ reportId, onBack, lang='ar' }) {
         {/* AGENDA */}
         {(report.agenda||[]).length > 0 && (
           <div style={{ marginTop:16 }}>
-            <SecBar icon="📅" title={t.agendaTitle2}/>
+            <SecBar icon="📅" title={isAr ? 'موجز جدول أعمال الزيارة' : 'Visit Agenda Summary'}/>
             {(report.agenda||[]).map((day,di) => (
               <div key={di} style={{ marginBottom:14, borderRadius:10, border:`1px solid ${CARD_BORDER}`, overflow:'hidden' }}>
                 <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', background:'#1e3a6e', color:'white', padding:'10px 16px' }}>
@@ -452,7 +464,7 @@ export default function ReportDetail({ reportId, onBack, lang='ar' }) {
         {/* EXECUTIVE SUMMARY */}
         {report.executive_summary && (
           <div style={{ marginTop:16, borderRadius:14, border:`1px solid ${CARD_BORDER}`, overflow:'hidden', boxShadow:SHADOW_SM }}>
-            <SecHead title={t.executiveSummaryTitle} dir={dir} right={<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.7)" strokeWidth="2" strokeLinecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>}/>
+            <SecHead title={isAr ? 'الملخص التنفيذي' : 'Executive Summary'} dir={dir} right={<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.7)" strokeWidth="2" strokeLinecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>}/>
             <div style={{ background:'white', padding:'20px 22px', fontSize:13.5, color:'#334155', lineHeight:2 }}>
               {report.executive_summary}
             </div>
@@ -463,7 +475,7 @@ export default function ReportDetail({ reportId, onBack, lang='ar' }) {
         {(report.conference_tracks||[]).length > 0 && (
           <div style={{ marginTop:16, borderRadius:14, border:`1px solid ${CARD_BORDER}`, overflow:'hidden', boxShadow:SHADOW_SM }}>
             <div style={{ background:SECTION_BG, padding:'11px 20px', display:'flex', alignItems:'center', justifyContent:'space-between' }}>
-              <span style={{ color:'white', fontWeight:800, fontSize:14 }}>{t.conferenceTracksTitle}</span>
+              <span style={{ color:'white', fontWeight:800, fontSize:14 }}>{(isAr ? 'المحاور الرئيسية للمؤتمر' : 'Main Conference Themes')}</span>
               <span style={{ background:'rgba(255,255,255,0.15)', color:'white', borderRadius:8, padding:'2px 10px', fontSize:12, fontWeight:700 }}>{report.conference_tracks.length}</span>
             </div>
             <div style={{ background:'white', padding:'18px' }}>
@@ -493,7 +505,7 @@ export default function ReportDetail({ reportId, onBack, lang='ar' }) {
         {/* SESSIONS */}
         {(['day1','day2','day3']).some(dk => sess[dk]?.length) && (
           <div style={{ marginTop:16 }}>
-            <SecBar icon="📋" title={t.conferenceSessionsTitle}/>
+            <SecBar icon="📋" title={isAr ? 'جدول جلسات معالي الرئيس التنفيذي' : 'CEO Session Schedule'}/>
             <div style={{ display:'flex', flexDirection:'column', gap:14 }}>
               {(['day1','day2','day3']).map((dk,di) => {
                 const ds=sess[dk]; if (!ds?.length) return null;
@@ -523,7 +535,7 @@ export default function ReportDetail({ reportId, onBack, lang='ar' }) {
           <div style={{ marginTop:16 }}>
             <div style={{ background:SECTION_BG, padding:'12px 20px', borderRadius:10, display:'flex', alignItems:'center', justifyContent:'space-between', direction:dir }}>
               <div style={{ display:'flex', alignItems:'center', gap:10 }}>
-                <span style={{ color:'white', fontWeight:900, fontSize:15 }}>{t.keySpeakersTitle}</span>
+                <span style={{ color:'white', fontWeight:900, fontSize:15 }}>{(isAr ? 'المتحدثون' : 'Speakers')}</span>
                 <span style={{ background:'rgba(255,255,255,0.15)', color:'white', borderRadius:8, padding:'2px 10px', fontSize:12, fontWeight:700 }}>{report.speakers.length} {t.speakersSuffix}</span>
               </div>
             </div>
@@ -561,7 +573,7 @@ export default function ReportDetail({ reportId, onBack, lang='ar' }) {
           <div style={{ marginTop:16 }}>
             <div style={{ background:SECTION_BG, padding:'12px 20px', borderRadius:10, display:'flex', alignItems:'center', justifyContent:'space-between', direction:dir }}>
               <div style={{ display:'flex', alignItems:'center', gap:10 }}>
-                <span style={{ color:'white', fontWeight:900, fontSize:15 }}>{t.expectedParticipantsTitle}</span>
+                <span style={{ color:'white', fontWeight:900, fontSize:15 }}>{(isAr ? 'المشاركون المتوقعون' : 'Expected Participants')}</span>
                 <span style={{ background:'rgba(255,255,255,0.15)', color:'white', borderRadius:8, padding:'2px 10px', fontSize:12, fontWeight:700 }}>{report.participants.length}</span>
               </div>
             </div>
@@ -590,7 +602,7 @@ export default function ReportDetail({ reportId, onBack, lang='ar' }) {
         {/* BILATERAL MEETINGS */}
         {(report.bilateral_meetings||[]).length > 0 && (
           <div style={{ marginTop:16 }}>
-            <SecBar icon="🤝" title={t.bilateralMeetingsTitle}/>
+            <SecBar icon="🤝" title={isAr ? 'اللقاءات الثنائية ونقاط الحديث على هامش الزيارة' : 'Bilateral Meetings & Talking Points'}/>
             {(report.bilateral_meetings||[]).map((m,i) => (
               <div key={i} style={{ border:`1px solid #e2e8f0`, borderRadius:14, overflow:'hidden', marginBottom:14 }}>
                 <div style={{ background:'linear-gradient(135deg,#1c3370,#1e40af)', padding:'13px 20px' }}>
@@ -629,7 +641,7 @@ export default function ReportDetail({ reportId, onBack, lang='ar' }) {
           <div style={{ marginTop:16 }}>
             <div style={{ background:SECTION_BG, padding:'12px 20px', borderRadius:10, display:'flex', alignItems:'center', justifyContent:'space-between', direction:dir }}>
               <div style={{ display:'flex', alignItems:'center', gap:10 }}>
-                <span style={{ color:'white', fontWeight:900, fontSize:15 }}>{t.suggestedMeetingsTitle}</span>
+                <span style={{ color:'white', fontWeight:900, fontSize:15 }}>{(isAr ? 'اللقاءات المقترحة' : 'Suggested Meetings')}</span>
                 <span style={{ background:'rgba(255,255,255,0.15)', color:'white', borderRadius:8, padding:'2px 10px', fontSize:12, fontWeight:700 }}>{report.suggested_meetings.length}</span>
               </div>
             </div>
@@ -665,7 +677,7 @@ export default function ReportDetail({ reportId, onBack, lang='ar' }) {
         <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:16, marginTop:16 }}>
           <div style={{ background:'white', border:`1px solid ${CARD_BORDER}`, borderRadius:14, overflow:'hidden', boxShadow:SHADOW_SM }}>
             <div style={{ padding:'14px 18px', borderBottom:'1px solid #f1f5f9', display:'flex', alignItems:'center', justifyContent:'space-between', direction:dir }}>
-              <span style={{ fontWeight:800, fontSize:14, color:'#0d1829' }}>{t.keyAmbassadorsTitle}</span>
+              <span style={{ fontWeight:800, fontSize:14, color:'#0d1829' }}>{(isAr ? 'السفراء الرئيسيون' : 'Key Ambassadors')}</span>
             </div>
             <div style={{ padding:'18px' }}>
               {(report.key_ambassadors||[]).length > 0 ? (
@@ -722,7 +734,7 @@ export default function ReportDetail({ reportId, onBack, lang='ar' }) {
           <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:16, marginTop:16 }}>
             {report.embassy?.name && (
               <div style={{ borderRadius:14, border:`1px solid ${CARD_BORDER}`, overflow:'hidden', boxShadow:SHADOW_SM }}>
-                <SecHead title={t.saudiEmbassyTitle} dir={dir} right={<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.7)" strokeWidth="1.8" strokeLinecap="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>}/>
+                <SecHead title={isAr ? 'سفارة المملكة لدى الولايات المتحدة الأمريكية' : 'Saudi Embassy in the USA'} dir={dir} right={<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.7)" strokeWidth="1.8" strokeLinecap="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>}/>
                 <div style={{ padding:'18px 20px', background:'white' }}>
                   {report.embassy?.name && <div style={{ fontWeight:800, fontSize:15, color:'#0d1829', marginBottom:14 }}>{report.embassy.name}</div>}
                   {report.embassy?.mission && (
@@ -758,7 +770,7 @@ export default function ReportDetail({ reportId, onBack, lang='ar' }) {
             )}
             {(report.weather||[]).length > 0 && (
               <div style={{ borderRadius:14, border:`1px solid ${CARD_BORDER}`, overflow:'hidden', boxShadow:SHADOW_SM }}>
-                <SecHead title={t.weatherForecastTitle} dir={dir} right={<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.7)" strokeWidth="1.8" strokeLinecap="round"><path d="M23 19a9 9 0 1 1-17.95-1"/></svg>}/>
+                <SecHead title={isAr ? 'الطقس ومواقيت الصلاة' : 'Weather & Prayer Times'} dir={dir} right={<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.7)" strokeWidth="1.8" strokeLinecap="round"><path d="M23 19a9 9 0 1 1-17.95-1"/></svg>}/>
                 <div style={{ padding:'18px 20px', background:'white' }}>
                   {report.weather[0] && (
                     <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:10, marginBottom:14 }}>
@@ -776,7 +788,7 @@ export default function ReportDetail({ reportId, onBack, lang='ar' }) {
                     </div>
                   )}
                   <div style={{ background:'#f8fafc', borderRadius:10, padding:'12px 14px', border:`1px solid ${CARD_BORDER}` }}>
-                    <div style={{ fontSize:11, color:'#94a3b8', fontWeight:700, marginBottom:8 }}>{t.weatherTipsTitle}</div>
+                    <div style={{ fontSize:11, color:'#94a3b8', fontWeight:700, marginBottom:8 }}>{(isAr ? 'توصيات الطقس' : 'Weather Tips')}</div>
                     {(t.weatherTips||[]).slice(0,4).map((tip,i) => (
                       <div key={i} style={{ display:'flex', alignItems:'flex-start', gap:8, marginBottom:5 }}>
                         <span style={{ color:'#1c3370', fontWeight:800, fontSize:12, flexShrink:0, marginTop:2 }}>•</span>
@@ -795,7 +807,7 @@ export default function ReportDetail({ reportId, onBack, lang='ar' }) {
           const today = report.prayer_times[0];
           return (
             <div style={{ marginTop:16, borderRadius:14, border:`1px solid ${CARD_BORDER}`, overflow:'hidden', boxShadow:SHADOW_SM }}>
-              <SecHead title={`${t.prayerTimesTitle2} (${report.city})`} dir={dir} right={<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.7)" strokeWidth="1.8" strokeLinecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>}/>
+              <SecHead title={`${(isAr ? 'مواقيت الصلاة' : 'Prayer Times')} (${report.city})`} dir={dir} right={<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.7)" strokeWidth="1.8" strokeLinecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>}/>
               <div style={{ background:'white', padding:'18px 22px' }}>
                 <div style={{ display:'grid', gridTemplateColumns:'repeat(3,1fr)', gap:10, direction:dir }}>
                   {[['الفجر','Fajr',today.fajr],['الظهر','Dhuhr',today.dhuhr],['العصر','Asr',today.asr],['المغرب','Maghrib',today.maghrib],['العشاء','Isha',today.isha]].map(([ar,en,val]) => val && (
@@ -813,7 +825,7 @@ export default function ReportDetail({ reportId, onBack, lang='ar' }) {
         {/* PREVIOUS OUTCOMES */}
         {(report.previous_outcomes||[]).length > 0 && (
           <div style={{ marginTop:16 }}>
-            <SecBar icon="📈" title={t.previousOutcomesTitle}/>
+            <SecBar icon="📈" title={isAr ? 'مخرجات الجولات السابقة للمؤتمر' : 'Previous Conference Outcomes'}/>
             {(report.previous_outcomes||[]).map((o,i) => (
               <div key={i} style={{ borderInlineStart:'4px solid #1c3370', background:'white', borderRadius:'0 12px 12px 0', padding:'14px 18px', marginBottom:12, border:`1px solid ${CARD_BORDER}`, boxShadow:SHADOW_SM }}>
                 <div style={{ fontWeight:800, fontSize:14, color:'#1c3370', marginBottom:6 }}>{isAr?'دورة':'Edition'} {o.year}</div>
@@ -826,7 +838,7 @@ export default function ReportDetail({ reportId, onBack, lang='ar' }) {
         {/* SFDA TALKING POINTS */}
         {(report.sfda_talking_points||[]).length > 0 && (
           <div style={{ marginTop:16, borderRadius:14, border:`1px solid ${CARD_BORDER}`, overflow:'hidden', boxShadow:SHADOW_SM }}>
-            <SecHead title={t.talkingPointsAITitle} dir={dir} right={<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.7)" strokeWidth="1.8" strokeLinecap="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>}/>
+            <SecHead title={isAr ? 'نقاط الحديث على هامش الزيارة' : 'Talking Points'} dir={dir} right={<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.7)" strokeWidth="1.8" strokeLinecap="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>}/>
             <div style={{ background:'white', padding:'18px 22px' }}>
               <ol style={{ margin:0, padding:0, listStyle:'none' }}>
                 {(report.sfda_talking_points||[]).map((pt,i) => (

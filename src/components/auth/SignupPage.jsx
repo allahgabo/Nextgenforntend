@@ -1,4 +1,5 @@
 import { useState } from 'react';
+
 import AuthLayout from './AuthLayout';
 import { authSignup, saveAuth } from '../../services/api';
 
@@ -105,6 +106,7 @@ export default function SignupPage({ onSignup, onGoLogin, initialLang }) {
   const [loading,  setLoading]  = useState(false);
   const [errors,   setErrors]   = useState({});
   const [apiErr,   setApiErr]   = useState('');
+
 
   const set = (k) => (e) => {
     setForm(p => ({ ...p, [k]: e.target.value }));

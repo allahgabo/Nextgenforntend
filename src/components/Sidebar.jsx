@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { T, getLang, setLang as persistLang } from '../i18n';
+import { getStoredUser } from '../services/api';
 
 // ─── Design tokens (dark navy theme) ─────────────────────
 const NAV_BG     = '#0d1829';
@@ -98,7 +99,7 @@ function NavItem({ id, label, icon, badge, active, isAr, font, onClick }) {
    SIDEBAR
    Props identical to original: page · setPage · lang · setLang
 ═══════════════════════════════════════════════════════════ */
-export default function Sidebar({ page, setPage, lang: parentLang, setLang: notifyParent }) {
+export default function Sidebar({ page, setPage, lang: parentLang, setLang: notifyParent, onLogout }) {
   const [lang, setLangState] = useState(() => getLang() || 'ar');
   const [hovered, setHovered] = useState(null);
 
@@ -113,6 +114,12 @@ export default function Sidebar({ page, setPage, lang: parentLang, setLang: noti
 
   const isAr = lang === 'ar';
   const font = isAr ? "'Cairo','Segoe UI',sans-serif" : "'DM Sans',-apple-system,sans-serif";
+  const storedUser = getStoredUser() || {};
+  // Also pull delegate info from the most recent report
+  const lastReport = (() => { try { return JSON.parse(localStorage.getItem('sfda_reports') || '[]')[0] || {}; } catch { return {}; } })();
+  const userName   = storedUser.name  || lastReport.delegate_name || storedUser.email?.split('@')[0] || (isAr ? 'مستخدم النظام' : 'System User');
+  const userRole   = storedUser.role  || lastReport.delegate_role || storedUser.title || (isAr ? 'الرئيس التنفيذي' : 'Admin · SFDA');
+  const userAvatar = (userName || 'U')[0].toUpperCase();
   const t    = T[lang];
 
   /* ── Nav sections — same IDs as original ── */
@@ -259,10 +266,10 @@ export default function Sidebar({ page, setPage, lang: parentLang, setLang: noti
               overflow: 'hidden', textOverflow: 'ellipsis',
               whiteSpace: 'nowrap', fontFamily: font,
             }}>
-              {isAr ? 'مستخدم النظام' : 'System User'}
+              {userName}
             </div>
             <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.28)', marginTop: 1 }}>
-              {isAr ? 'الرئيس التنفيذي' : 'Admin · SFDA'}
+              {userRole}
             </div>
           </div>
           <div style={{
@@ -274,6 +281,7 @@ export default function Sidebar({ page, setPage, lang: parentLang, setLang: noti
 
         {/* Logout */}
         <button
+          onClick={() => onLogout && onLogout()}
           style={{
             width: '100%', padding: '9px',
             background: 'rgba(255,255,255,0.04)',
