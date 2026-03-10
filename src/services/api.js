@@ -182,29 +182,48 @@ export const generateAI = async (reportId) => {
 
   console.log('[generateAI] payload →', JSON.stringify(payload, null, 2));
 
-  // Try proxy first, then fall back to direct Cloud Run call
   const CLOUD_RUN = 'https://briefing-api-365936249363.me-central1.run.app';
-  const fetchOptions = {
-    method:  'POST',
+
+  // Helper: attempt one POST and return res
+  const attempt = async (url, body) => fetch(url, {
+    method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body:    JSON.stringify(payload),
-  };
+    body: JSON.stringify(body),
+    signal: AbortSignal.timeout(120000), // 2 min timeout
+  });
 
-  let res = await fetch(BRIEFING_URL, fetchOptions);
+  let res = await attempt(BRIEFING_URL, payload);
 
-  // If proxy returns 404 (path not rewritten yet), call Cloud Run directly
+  // Proxy returned 404 — hit Cloud Run directly
   if (res.status === 404) {
-    console.warn('[generateAI] proxy 404 — trying Cloud Run directly');
-    res = await fetch(CLOUD_RUN + '/briefing', fetchOptions);
+    console.warn('[generateAI] proxy 404 → direct Cloud Run');
+    res = await attempt(CLOUD_RUN + '/briefing', payload);
+  }
+
+  // Workflow failed — retry once with stripped-down optional fields
+  if (!res.ok) {
+    let errText = '';
+    try { errText = await res.text(); } catch {}
+    console.warn('[generateAI] first attempt failed:', res.status, errText);
+
+    if (errText.includes('Workflow failed') || res.status === 500) {
+      console.warn('[generateAI] retrying with minimal payload...');
+      const minPayload = {
+        ...payload,
+        // strip optional URLs that may cause scraping failures
+        agenda_speakers_url: '',
+        speakers_url:        '',
+        conference_url:      `https://www.google.com/search?q=${encodeURIComponent(payload.conference_name)}+${encodeURIComponent(payload.city)}`,
+      };
+      res = await attempt(CLOUD_RUN + '/briefing', minPayload);
+    }
   }
 
   if (!res.ok) {
-    let msg = 'Briefing API error: ' + res.status;
+    let msg = 'فشل توليد التقرير. يرجى التحقق من روابط المؤتمر والمحاولة مجدداً.';
     try {
-      const body = await res.text();
-      console.error('[generateAI] API error body:', body);
-      const j = JSON.parse(body);
-      msg = j.detail || j.error || msg;
+      const j = JSON.parse(await res.text());
+      if (j.detail && !j.detail.includes('Workflow')) msg = j.detail;
     } catch {}
     throw { response: { status: res.status, data: { error: msg } } };
   }
