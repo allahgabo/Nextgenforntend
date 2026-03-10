@@ -151,17 +151,47 @@ export default function ReportDetail({ reportId, onBack, lang='ar' }) {
       <style>{`
         @keyframes rd-spin{to{transform:rotate(360deg)}}
         @media print {
-          @page { size: A4; margin: 15mm; }
-          body { background: white !important; }
-          /* Hide everything outside the report */
-          body > #root > * > *:not(#report-print-area),
-          nav, aside, header, footer,
-          button, .no-print { display: none !important; }
-          /* Show report content */
-          #report-print-area { display: block !important; background: white !important; }
+          @page { size: A4; margin: 12mm; }
+
+          /* ── Reset everything to visible first ── */
+          * { visibility: visible !important; }
+
+          /* ── Hide UI chrome ── */
+          body > #root > div > nav,
+          body > #root > div > aside,
+          body > #root > div > header,
+          [class*="sidebar"], [class*="Sidebar"],
+          [class*="nav"], [class*="Nav"],
+          button.no-print,
+          .no-print { display: none !important; visibility: hidden !important; }
+
+          /* ── Page setup ── */
+          html, body {
+            background: white !important;
+            margin: 0 !important; padding: 0 !important;
+            width: 100% !important;
+          }
+
+          /* ── Make report fill the page ── */
+          #report-print-area {
+            display: block !important;
+            visibility: visible !important;
+            position: absolute !important;
+            top: 0 !important; left: 0 !important;
+            width: 100% !important;
+            background: white !important;
+            padding: 0 !important;
+          }
+
+          /* ── Hide only buttons inside report ── */
           #report-print-area button { display: none !important; }
-          /* Ensure backgrounds and colors print */
-          * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+
+          /* ── Force color printing ── */
+          * {
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+            color-adjust: exact !important;
+          }
         }
       `}</style>
       <div style={{ padding:'20px 28px 60px', maxWidth:1100, margin:'0 auto' }}>
